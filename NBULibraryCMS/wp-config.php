@@ -19,10 +19,10 @@
 define('DB_NAME', 'NBU_Library');
 
 /** MySQL database username */
-define('DB_USER', 'rado');
+define('DB_USER', '');
 
 /** MySQL database password */
-define('DB_PASSWORD', 'rado123');
+define('DB_PASSWORD', '');
 
 /** MySQL hostname */
 define('DB_HOST', 'localhost');
