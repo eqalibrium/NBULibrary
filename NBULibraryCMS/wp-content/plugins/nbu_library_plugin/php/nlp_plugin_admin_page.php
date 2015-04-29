@@ -31,10 +31,11 @@ function nlp_options_page() {
         </div>
 
         <?php
-        $args = array('orderby' => 'name', 'order' => 'ASC', 'fields' => 'all');
-            var_dump(wp_get_post_terms(5,'category'));
+           
+       
+}
           
-    }
+    
 
 //Add options page
     function nlp_add_options_link() {
