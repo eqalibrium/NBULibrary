@@ -26,6 +26,8 @@ function nlp_plugin_ajax_js_load() {
     }
 
     
-
+add_action( 'admin_init', 'nlp_plugin_admin_refresher_style_loader' );
+   add_action( 'admin_menu', 'nlp_plugin_admin_refresher_style_loader' );
+   
     add_action('wp_enqueue_scripts', 'nlp_plugin_admin_refresher_style_loader');
  

@@ -40,7 +40,7 @@ function nlp_options_page() {
 //Add options page
     function nlp_add_options_link() {
         if (current_user_can('manage_options')) {
-            add_menu_page('NBU_Library', 'НБУ Библиотека', 'publish_posts', _FILE_, 'nlp_options_page');
+            add_menu_page('NBU_Library', 'НБУ Библиотека', 'publish_posts', __FILE__, 'nlp_options_page');
         }
     }
 
