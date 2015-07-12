@@ -774,7 +774,8 @@ function nlp_reservation_answer_to_client() {
            
        }else if($repeat_option_selected == 3){
            //mesechna funkciq tuk za zapazvane 
-           monthly_selected_save_reservation();
+           monthly_selected_save_reservation($date_current_month,$date_current_day,$date_current_year,$selected_hall_id,$event_name,$confirmation_email,$event_info,$nlp_value_send_by_ajax);
+           
        }
    }
 }
@@ -798,7 +799,15 @@ function weekly_selected_save_reservation($date_current_month,$date_current_day,
             $value_of_week_repeting = 0;
         }
         
-          $days_selected_array = array();
+          $days_selected_array = array(
+              'Mon' => "",
+              'Tue' => "",
+              'Wed'=> "",
+              'Thu'=>"",
+              'Fri'=>"",
+              'Sat' => "",
+              'Sun'=> "",
+          );
         $value_of_nlp_repeat_if_free = filter_input(INPUT_POST,'value_of_nlp_repeat_if_free', FILTER_SANITIZE_STRING);
           foreach($_POST['nlp_meta_data_for_day_of_week'] as $k => $data){
              $days_of_week_selected = filter_var($data,FILTER_SANITIZE_NUMBER_INT);
@@ -819,6 +828,8 @@ function weekly_selected_save_reservation($date_current_month,$date_current_day,
              }
 //             array_push($days_selected_array, $days_of_week_selected);
          }
+         var_dump($days_selected_array);
+        
          $dates_possible_and_not = array(
              "da" => array(),
              "ne" => array(),
@@ -844,10 +855,12 @@ function weekly_selected_save_reservation($date_current_month,$date_current_day,
 
                     $postdate = $f . "-" . $p . "-" . $k . " 8:00:00";
                 }
+               
                 $free_reservation = array();
                 $day_name = check_day_of_week($postdate);
+                 
                 $day_taken_times = nlp_check_if_time_is_taken($postdate,$selected_hall_id);
-               
+                
                 foreach ($nlp_value_send_by_ajax as $kk => $vall) {
 
                     if ($vall != "") {
@@ -857,57 +870,73 @@ function weekly_selected_save_reservation($date_current_month,$date_current_day,
                         }
                     } 
                 }
-               
-                foreach($days_selected_array as $key=> $val){
-                    
+//tova e za denqt kojto trqbva da se zapzva (ponedelnik ili petuk ili i dvete i t.n.) tova raboti corektno
+                $get_sunday = $day_name;
                    
-                    if($val != "" && $day_name == $key){
-                    if($cnt > $value_of_week_repeting){
-                        $cnt = $value_of_week_repeting;
-                         
-                    }elseif($cnt < $value_of_week_repeting){
-                         $cnt++;
-                         
-                    }elseif($cnt == $value_of_week_repeting){
-                            if($free_reservation[$postdate] == "ne"){
-                                $dates_possible_and_not['ne'][$postdate] = "ne";
-                               
-                            }else{
-                               $dates_possible_and_not['da'][$postdate] = "da";
-                              
-                            }
+                    if ($cnt == $value_of_week_repeting) {
+                        
+                         if ($days_selected_array[$day_name] != "") {
+                            // var_dump("----" . $postdate);
+                        if ($free_reservation[$postdate] == "ne") {
+                            $dates_possible_and_not['ne'][$postdate] = "ne";
+                            // var_dump($day_name);
+                        } else {
+                            $dates_possible_and_not['da'][$postdate] = "da";
+                            //var_dump($day_name);
+                        }
+                         }
+                        if ($get_sunday == "Sun") {
                             $cnt = 1;
-                        }  
-                    }
+                          //  var_dump($cnt . "inside");
+                        }
+                    } elseif ($cnt < $value_of_week_repeting) {
+                        
+                        if ($get_sunday == "Sun") {
+                            $cnt++;
+                       //     var_dump("2-".$cnt);
+                        }
+                       
+                    } elseif ($cnt > $value_of_week_repeting){ 
+                   // var_dump($get_sunday);
+                        if ($get_sunday == "Sun") {
+                           $cnt = 1;
+                       //     var_dump("1-".$cnt);
+                        }
+             
+         
+                       
+                    
                 }
             }
-         }
-         if($value_of_nlp_repeat_if_free == "Yes"){
+        }
+        if($value_of_nlp_repeat_if_free == "Yes"){
+//              var_dump($dates_possible_and_not);
             foreach($dates_possible_and_not['da'] as $key=>$val){
-              
-                       $post = array(
-                        'post_content' => $event_info, // The full text of the post.
-                        'post_name' => $event_name, // The name (slug) for your post
-                        'post_title' => $event_name, // The title of your post.
-                        'post_type' => 'post', // Default 'post'.
-                        'post_status' => 'publish',
-                        'post_date' => $key,
-                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
-                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
-                        'post_category' => $selected_hall_id, // Default empty.
-                    );
-                    $post_categories = array();
-                    array_push($post_categories, $selected_hall_id);
-
-                    $post_id = wp_insert_post($post);
-                    wp_set_post_categories($post_id, $post_categories, false);
-                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
-                
+//              
+//                       $post = array(
+//                        'post_content' => $event_info, // The full text of the post.
+//                        'post_name' => $event_name, // The name (slug) for your post
+//                        'post_title' => $event_name, // The title of your post.
+//                        'post_type' => 'post', // Default 'post'.
+//                        'post_status' => 'publish',
+//                        'post_date' => $key,
+//                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+//                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+//                        'post_category' => $selected_hall_id, // Default empty.
+//                    );
+//                    $post_categories = array();
+//                    array_push($post_categories, $selected_hall_id);
+//
+//                    $post_id = wp_insert_post($post);
+//                    wp_set_post_categories($post_id, $post_categories, false);
+//                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
+//                
             }
              echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
             foreach($dates_possible_and_not['ne'] as $kkk=>$bbbb){
                 echo "<p>".$kkk."</p>";
             }
+//            var_dump($free_reservation);
             echo "<p>Свободните Часове са запазени.</p>";
             echo "</div>";
          }else{
@@ -945,8 +974,260 @@ function check_day_of_week($postdate){
  * 
  * 
  *  */
-function monthly_selected_save_reservation(){
-    
+function monthly_selected_save_reservation($date_current_month,$date_current_day,$date_current_year,$selected_hall_id,$event_name,$confirmation_email,$event_info,$nlp_value_send_by_ajax){
+    if(isset($_POST['nlp_meta_data_for_day_of_week'],$_POST['value_of_repeating_months'],$_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_number_of_months_to_repeat'])  && !empty($_POST['value_number_of_months_to_repeat']) && !empty($_POST['nlp_meta_data_for_day_of_week'])){
+          $value_number_of_months_to_repeat = filter_input(INPUT_POST,'value_number_of_months_to_repeat', FILTER_SANITIZE_NUMBER_INT);
+        $value_of_week_repeting = filter_input(INPUT_POST,'value_of_week_repeting', FILTER_SANITIZE_NUMBER_INT);
+           $value_of_repeating_months = filter_input(INPUT_POST,'value_of_repeating_months', FILTER_SANITIZE_NUMBER_INT);
+       
+          $days_selected_array = array(
+              'Mon' => "",
+              'Tue' => "",
+              'Wed'=> "",
+              'Thu'=>"",
+              'Fri'=>"",
+              'Sat' => "",
+              'Sun'=> "",
+          );
+        $value_of_nlp_repeat_if_free = filter_input(INPUT_POST,'value_of_nlp_repeat_if_free', FILTER_SANITIZE_STRING);
+          foreach($_POST['nlp_meta_data_for_day_of_week'] as $k => $data){
+             $days_of_week_selected = filter_var($data,FILTER_SANITIZE_NUMBER_INT);
+             if($k == 1){
+                 $days_selected_array['Mon'] = $data;
+             }else if ($k == 2){
+                 $days_selected_array['Tue'] = $data;
+             }else if($k == 3){
+                 $days_selected_array['Wed'] = $data;
+             }else if($k == 4){
+                 $days_selected_array['Thu'] = $data;
+             }else if($k == 5){
+                 $days_selected_array['Fri'] = $data;
+             }else if($k == 6){
+                 $days_selected_array['Sat'] = $data;
+             }else if($k == 7){
+                 $days_selected_array['Sun'] = $data;
+             }
+//             array_push($days_selected_array, $days_of_week_selected);
+         }
+        
+        
+         $dates_possible_and_not = array(
+             "da" => array(),
+             "ne" => array(),
+         );
+         
+         $cnt = $value_of_week_repeting;
+         $mnt_cnt = $value_of_repeating_months;
+         $year_incremented = $date_current_year;
+      
+         for($i = $date_current_month;$i <= $value_number_of_months_to_repeat + $date_current_month;$i++){
+              
+            
+                 if($i > 12 && $i <= 24){
+                     
+                    $number = cal_days_in_month(CAL_GREGORIAN, ($i-12), $year_incremented);
+                 }elseif($i > 24 && $i <= 36){
+                    // var_dump("IF ELSE 24 NUMBER");
+                    $number = cal_days_in_month(CAL_GREGORIAN, ($i-24), $year_incremented);
+                 }elseif($i > 36 && $i <= 48){
+                    $number = cal_days_in_month(CAL_GREGORIAN, ($i-36), $year_incremented);
+                 }elseif($i > 48 && $i <= 60){
+                    $number = cal_days_in_month(CAL_GREGORIAN, ($i-48), $year_incremented);
+                 }elseif($i > 60){
+                    $number = cal_days_in_month(CAL_GREGORIAN, ($i-60), $year_incremented);
+                 }else{
+                     $number = cal_days_in_month(CAL_GREGORIAN, $i, $year_incremented);
+                    
+                 }
+            //var_dump($number."alskodjhasjvdnqwbm,k;lasidhughqweqwleasd");
+             for($k = 1;$k <= $number;$k++){
+//                if ($i > 12) {
+//                     $year_incremented = $date_current_year + 1;
+//                    if($i == 13){
+//                       $mont_cnt  = 1;
+//                        $v = 1;
+//                    }elseif($i > 13){
+//                        $v = $i - 12  ;
+//                    }
+//                    var_dump($year_incremented."y1");
+                  
+                 if($i > 12 && $i <= 24){
+                  //       var_dump("<p>ssss". ($i-12) ."</p>");
+                    $postdate = $year_incremented . "-" . ($i-12) . "-" . $k . " 8:00:00";
+                 //   var_dump($year_incremented."y1".$year_incremented . "-" . $i-12 . "-" . $k . " 8:00:00");
+                    
+                 }elseif($i > 24 && $i <= 36){
+                   
+                     $postdate = $year_incremented . "-" . ($i-24) . "-" . $k . " 8:00:00";
+                // var_dump($year_incremented."y2".$postdate);
+                    
+                     
+                 }elseif($i > 36 && $i <= 48){
+                    
+                     $postdate = $year_incremented . "-" . ($i-36) . "-" . $k . " 8:00:00";
+                // var_dump($year_incremented."y3".$postdate);
+                    
+                     
+                 }elseif($i > 48 && $i <= 60){
+                     $postdate = $year_incremented . "-" . ($i-48) . "-" . $k . " 8:00:00";
+                // var_dump($year_incremented."y4".$postdate);
+                    
+                     
+                 }elseif($i > 60){
+                     $postdate = $year_incremented . "-" . ($i-60) . "-" . $k . " 8:00:00";
+               //  var_dump($year_incremented."y5".$postdate);
+                    
+                     
+                 }else{
+                    // var_dump($year_incremented."y");
+                     $postdate = $year_incremented . "-" . $i . "-" . $k . " 8:00:00";
+                 }
+//                    $postdate = $year_incremented . "-" . $i . "-" . $k . " 8:00:00";
+                    //var_dump($postdate." NIE");
+//                } else if ($i <= 12) {
+//                    $postdate = $date_current_year . "-" . $i . "-" . $k . " 8:00:00";
+//                } else if ($i > 24) {
+//                    $var2 = $i % 12;
+//                    $var1  = (int)round(($i - $var2) / 10);
+//                    var_dump($var1."var1");
+//                    var_dump($var2."var2");
+//                    $p = $i - ($var1 * 12);
+//                    $year_incremented = $var1 + $date_current_year;
+//                    var_dump('<p>'.$var1."date curent year".$date_current_year."</p>");
+//                    $postdate = $year_incremented . "-" . $p . "-" . $k . " 8:00:00";
+//                    
+//                }
+                
+                $free_reservation = array();
+              //  var_dump("<p>".$postdate."MAJKA TI </p>");
+                $day_name = check_day_of_week($postdate);
+                 
+                $day_taken_times = nlp_check_if_time_is_taken($postdate,$selected_hall_id);
+                
+                foreach ($nlp_value_send_by_ajax as $kk => $vall) {
+
+                    if ($vall != "") {
+                       
+                        if ($day_taken_times[$kk] != "") {
+                            $free_reservation[$postdate] = "ne";
+                        }
+                    } 
+                }
+//tova e za denqt kojto trqbva da se zapzva (ponedelnik ili petuk ili i dvete i t.n.) tova raboti corektno
+                $get_sunday = $day_name;
+                   
+                    if ($cnt == $value_of_week_repeting) {
+                        
+                         if ($days_selected_array[$day_name] != "") {
+//                             var_dump("----" . $postdate);
+                        if ($free_reservation[$postdate] == "ne") {
+                            $dates_possible_and_not['ne'][$postdate] = "ne";
+                            // var_dump($day_name);
+                        } else {
+                            $dates_possible_and_not['da'][$postdate] = "da";
+                            //var_dump($day_name);
+                        }
+                         }
+                        if ($get_sunday == "Sun") {
+                            $cnt = 1;
+//                            var_dump($cnt . "inside");
+                        }
+                    } elseif ($cnt < $value_of_week_repeting) {
+                        
+                        if ($get_sunday == "Sun") {
+                            $cnt++;
+//                            var_dump("2-".$cnt);
+                        }
+                       
+                    } elseif ($cnt > $value_of_week_repeting){ 
+//                    var_dump("sund".$get_sunday);
+                        if ($get_sunday == "Sun") {
+                           $cnt = 1;
+//                            var_dump("1-".$cnt);
+                        }
+             
+         
+                       
+                    
+                }
+                
+            }
+                if($i > 12 && $i <= 24){
+//                     var_dump(gregoriantojd($i-12,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                     $jd=gregoriantojd(($i-12),1,$year_incremented);
+         
+                }elseif($i > 24 && $i <= 36){
+//                           var_dump(gregoriantojd($i-24,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                    $jd=gregoriantojd(($i-24),1,$year_incremented);
+                }elseif($i > 36 && $i <= 48){
+//                           var_dump(gregoriantojd($i-36,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                     $jd=gregoriantojd(($i-36),1,$year_incremented);
+                }elseif($i > 48 && $i <= 60){
+//                           var_dump(gregoriantojd($i-48,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                     $jd=gregoriantojd(($i-48),1,$year_incremented);
+                }elseif($i > 60){
+//                           var_dump(gregoriantojd($i-60,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                     $jd=gregoriantojd(($i-60),1,$year_incremented);
+                }else{
+//                           var_dump(gregoriantojd($i,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                    $jd=gregoriantojd($i,1,$year_incremented);
+                   
+                 }
+           
+//            var_dump(jdmonthname($jd,0) . ":::::::".$jd);
+          //  die(var_dump(jdmonthname($jd,0)));
+            if(jdmonthname($jd, 0) == "Dec"){
+                $year_incremented++;
+              //  var_dump($year_incremented."poduhasjlkqwe");
+            }
+             
+        }
+        if($value_of_nlp_repeat_if_free == "Yes"){
+//              var_dump($dates_possible_and_not);
+            foreach($dates_possible_and_not['da'] as $key=>$val){
+//              
+//                       $post = array(
+//                        'post_content' => $event_info, // The full text of the post.
+//                        'post_name' => $event_name, // The name (slug) for your post
+//                        'post_title' => $event_name, // The title of your post.
+//                        'post_type' => 'post', // Default 'post'.
+//                        'post_status' => 'publish',
+//                        'post_date' => $key,
+//                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+//                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+//                        'post_category' => $selected_hall_id, // Default empty.
+//                    );
+//                    $post_categories = array();
+//                    array_push($post_categories, $selected_hall_id);
+//
+//                    $post_id = wp_insert_post($post);
+//                    wp_set_post_categories($post_id, $post_categories, false);
+//                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
+//                
+            }
+             echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
+            foreach($dates_possible_and_not['ne'] as $kkk=>$bbbb){
+                echo "<p>".$kkk."</p>";
+            }
+//            var_dump($free_reservation);
+            echo "<p>Свободните Часове са запазени.</p>";
+            echo "</div>";
+         }else{
+              echo "<div class='nlp_possibilities'>";
+             foreach($dates_possible_and_not as $k => $b){
+                 if($k == "da"){
+                     echo "<div class='nlp_free_and_open'><h3>Свободни дати за дадените параметри</h3>";
+                 }else{
+                      echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
+                 }
+                 foreach($b as $d=>$s){
+                     echo "<p>".$d."</p>";
+                 }
+                 echo "</div>";
+             }
+             echo "</div>";
+         }
+    }
 }
 
 /*
@@ -1483,7 +1764,7 @@ function nlp_repeat_event_chosen() {
 
         if ($value_of_checkbox == 2) {
             $register_repeat .= "<div class='nlp_repeat_weeakly_wrapper'>";
-            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_all' value='100'> седмица</option><option id='nlp_week_one' value='1'>1 седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
+            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_all' value='1'> седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
             $register_repeat .="<div class='nlp_each_week_day_chosen_wrapper'><label for='nlp_each_week_day_chosen'>Да се повтаря в :</label><input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>В<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Ч<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Н";
             $register_repeat .= "<p class='nlp_repeat_inforamtion'> ! Начало се смята текущо вкараната дата и час по-горе във формата. !</p>";
             $register_repeat .= "<div class='nlp_repeat_possible'><input type='checkbox' class='nlp_repeat_if_free' name='nlp_repeat_if_free' />Ако има заети дати ,запази всички без заетите.<p>Забележка! Ако не изберете тази опиция и часовете са заети ,ще ви бъдат показани датите на който неможете да запазите часове.</p></div>";
@@ -1495,13 +1776,14 @@ function nlp_repeat_event_chosen() {
             echo $register_repeat;
         } else if ($value_of_checkbox == 3) {
             $register_repeat .= "<div class='nlp_repeat_montly_wrapper'>";
-            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_all' value='100'> седмица</option><option id='nlp_week_one' value='1'>1 седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
+            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_one' value='1'> седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
             $register_repeat .="<div class='nlp_each_week_day_chosen_wrapper'><label for='nlp_each_week_day_chosen'>Да се повтаря в :</label><input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>В<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Ч<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Н";
             $register_repeat .= "<p class='nlp_repeat_inforamtion'> ! Начало се смята текущо вкараната дата и час по-горе във формата. !</p>";
             $register_repeat .= "<div class='nlp_monly_repeat_wrapper_each'><label for='nlp_each_month'>Да се повтаря всeки</label><select id='nlp_each_month'><option id='nlp_month_one' value='1'> Месец</option><option id='nlp_month_two' value='2'> 2-ри Месеца</option><option id='nlp_month_three' value='3'> 3-ти Месеца</option><option id='nlp_month_four' value='4'> 4-ти Месеца</option><option id='nlp_month_six' value='6'> 6-ти Месеца</option></select>";
-
+            
             $register_repeat .= "<div class='nlp_monly_repeat_times'><label for='nlp_number_of_months'>Да се повтаря в продължение на </label><input type='text' maxlength='4' size='4' name='nlp_number_of_months' class='nlp_number_of_months' /> Месеца </div>";
-
+              $register_repeat .= "<div class='nlp_repeat_possible'><input type='checkbox' class='nlp_repeat_if_free' name='nlp_repeat_if_free' />Ако има заети дати ,запази всички без заетите.<p>Забележка! Ако не изберете тази опиция и часовете са заети ,ще ви бъдат показани датите на който неможете да запазите часове.</p></div>";
+          
             $register_repeat .="</div>";
             $register_repeat .="</div>";
 
