@@ -1,22 +1,4 @@
 <?php
-
-
-
-/*
-1. Sortirane ne godinite.
-2. Nedelnite dni s drugo rabotno vreme
-3. Da se premahnat skobite na kalendara i da se sloji pole nad calendara za dnite ot sedmicata
-4. Da se dobavi nad cqlata sisteme paragraf.
-5. Problem pri izbora na razli4na godina ne izlizat vsi4ki nalichni meseci za sledvashta godina.
-6. Pri izbora na godina da ne se pokazvat predhodnite godini, samo ADMIN da moje da gi vijda.
-7. Vsichki funkcionalnosti v kalendara  i da sestilizira ( toest slagame klasove pri vsichki za da mojem da gi obrabotvame)
-8. Kalendara da ima selector za zala
-9. Mail funcia za napravena rezervaciq za Zala.
-
-
-
-
-*/
 /* * ****************************************************************************
  * Admin page                                                                  *
  * **************************************************************************** */

@@ -1,13 +1,31 @@
 <?php
 
-//
+function hide_not_menu_for_not_admin_users() {
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-//funciq koqto izvejda na preden plan formata za suzdavane na nova zala. Raboti ajax-ove pri submit.
+    if (is_user_logged_in()) {
+        ?>
+        <style>
+            #menu-item-2139{
+                display: block;
+                float: right;
+                margin-top: -10px;
+            }
+        </style>
+
+        <?php
+
+    } else {
+        ?>
+        <style>
+            #menu-item-2139{
+                display: none;
+            }
+        </style>
+        <?php
+
+    }
+}
+
 function text_shortcode() {
 
 
@@ -36,6 +54,7 @@ function text_shortcode() {
             }
         }
     }
+    hide_not_menu_for_not_admin_users();
 }
 
 add_shortcode("text_shortcode_short", 'text_shortcode');
@@ -46,8 +65,7 @@ add_shortcode("text_shortcode_short", 'text_shortcode');
  * shortcode for Administration page 
  * 
  *  */
-// Moje bi e originalnata funciq - samo ako e administrator i e lognat.
- //funciq koqto izvejda na preden plan formata za suzdavane na nova zala. Raboti ajax-ove pri submit.
+
 function nbl_plugin_create_new_hall() {
     if (is_user_logged_in()) {
         ?>
@@ -59,6 +77,7 @@ function nbl_plugin_create_new_hall() {
         <div class='meassage'></div>
         <?php
 
+        hide_not_menu_for_not_admin_users();
     }
 }
 
@@ -66,7 +85,6 @@ add_shortcode("nbl_plugin_create_new_hall_short", 'nbl_plugin_create_new_hall');
 
 add_action('wp_ajax_npl_new_hall_submit', 'npl_new_hall_submit');
 
-//Ajax-ov submit koito suzdava novata zala - filtrira informaciqta, i proverqva za sushtestvuvashta takava.
 function npl_new_hall_submit() {
 
     if (isset($_POST['npl_plugin_name_of_category']) && !empty($_POST['npl_plugin_name_of_category'])) {
@@ -92,7 +110,7 @@ function npl_new_hall_submit() {
 
 /*
 
- * Function adding meta for the posts for end time of the current post
+ * Function adding meta for the posts for end time of the curent post
  * (the post submit time is the start time of the reserved hall,afterwards its this meta for end)
  * 
  * 
@@ -106,7 +124,7 @@ function nlp_add_meta_box_for_the_post_end_time() {
 
     add_meta_box('nlp_html_for_meta_box_end_time', 'Краен Час', 'nlp_html_for_meta_box_end_time_meta', 'post', 'normal', 'default');
 }
-//html v adminskata chast
+
 //html-ut na meta boxa 
 function nlp_html_for_meta_box_end_time_meta() {
 // The Event Location Metabox
@@ -120,15 +138,15 @@ function nlp_html_for_meta_box_end_time_meta() {
 //            // Get the location data if its already been entered
     $nlp_meta_end_time_of_post = get_post_meta($post->ID, 'nlp_html_for_meta_box_end_time', true);
     $post_term = wp_get_post_categories($post->ID);
-   
+
     if (!empty($post_term)) {
         $post_term_chosen = $post_term[0];
 
         $post_data = get_post($post->ID);
         $post_date = $post_data->post_date;
-       
+
         $taken_or_not = nlp_check_if_time_is_taken($post_date, $post_term_chosen);
-       
+
 
 
 //            $dresscode = get_post_meta($post->ID, '_dresscode', true);
@@ -209,7 +227,7 @@ function nlp_html_for_meta_box_end_time_meta() {
  * recives index and returns the hour depending on the index
  * 
  *  */
-//Grupirane na bockovete za konkreten chas, za vsi4ki zali.
+
 function nlp_human_translator_blocks($i) {
     switch ($i) {
         case 0 :
@@ -265,13 +283,12 @@ function nlp_human_translator_blocks($i) {
  * function to check if any hours are taken from another post (reservation) and disable it from being chosen
  * 
  *  */
-//Proverqva za zaetite chasove dali opredelenata zalata dali e zaeta ili ne.
-//Vrushta masiv sus zaetite chasove, ako ima takiva.
+
 function nlp_check_if_time_is_taken($date_input, $hall_number) {
 
     //this must be done before the acutal call of the function ,example code for $date value 
     $post_date = $date_input;
-  
+
     $date = explode(" ", $post_date);
 
     //end of $date ,value like this must be returned ( year /month/ day)
@@ -279,7 +296,7 @@ function nlp_check_if_time_is_taken($date_input, $hall_number) {
     $taken_hours = array();
     //var_dump(get_categories());
     //ne e s pravilnite categorii  ! ! ! da se opravi
-    
+
     $args = array(
         'post_type' => 'post',
         'category' => $hall_number,
@@ -292,13 +309,13 @@ function nlp_check_if_time_is_taken($date_input, $hall_number) {
             ),
         ),
     );
-    
+
     $query = get_posts($args);
 //    if(empty($query)){
 //        $the_array = "";
 //        return $the_array;
 //    }
-  
+
     $the_array = array(
         0 => "",
         1 => "",
@@ -323,15 +340,15 @@ function nlp_check_if_time_is_taken($date_input, $hall_number) {
 
                 $post_id = $data_value;
                 $post_end_time = get_post_meta($data_value, 'nlp_html_for_meta_box_end_time', true);
-               if(is_array($post_end_time)){
-                foreach ($post_end_time as $key => $value) {
+                if (is_array($post_end_time)) {
+                    foreach ($post_end_time as $key => $value) {
 
-                    if ($value != "") {
+                        if ($value != "") {
 
-                        $the_array[$key] = $value;
+                            $the_array[$key] = $value;
+                        }
                     }
                 }
-               }
             }
         }
     }
@@ -348,7 +365,7 @@ function nlp_check_if_time_is_taken($date_input, $hall_number) {
 
 
 add_action('wp_ajax_nlp_update_post_end_time', 'nlp_update_post_end_time');
-//Ajax0vo zapametqvane v adminskata chast.- zapazvane na chasovete v zalite
+
 function nlp_update_post_end_time() {
 
     if (isset($_POST['nlp_post_variable_send'], $_POST['nlp_post_variable_id']) && !empty($_POST['nlp_post_variable_send']) && !empty($_POST['nlp_post_variable_id'])) {
@@ -363,7 +380,7 @@ function nlp_update_post_end_time() {
                 array_push($nlp_value_send_by_ajax, $nlp_value_send_by_ajax_val);
             }
         }
-        
+
         foreach ($nlp_value_send_by_ajax as $key => $v) {
 
             if ($v == false) {
@@ -385,10 +402,10 @@ function nlp_update_post_end_time() {
                 }
             }
         }
-       
+
         //  var_dump($nlp_value_send_by_ajax[0]);
         $nlp_value_send_by_ajax_id = filter_input(INPUT_POST, 'nlp_post_variable_id', FILTER_VALIDATE_INT);
-       
+
         update_post_meta($nlp_value_send_by_ajax_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
         echo "<div class='nlp_responce_ajax'>Обновяването беше направено Успешно.</div>";
     } else {
@@ -403,7 +420,7 @@ function nlp_update_post_end_time() {
  * 
  * 
  *  */
-//Forma za rezervaciq
+
 function nlp_reservations_form() {
     $reservation_form = "";
     $all_halls_id_names = array();
@@ -438,6 +455,7 @@ function nlp_reservations_form() {
     }
 
     $reservation_form .= "<div class='nlp_reservation_wrapper'>";
+    $reservation_form .= "<div id='reservation_info'></div>";
     $reservation_form .= "<select id='nlp_select_hall'>";
     foreach ($all_halls_id_names as $index => $value) {
         foreach ($value as $key => $inner_value) {
@@ -455,13 +473,13 @@ function nlp_reservations_form() {
     $reservation_form .='<div class="nlp_reservation_date">' . nlp_ajax_setter_for_reservation() . '</div>';
     $reservation_form .="<div class='nlp_returned_data'></div>";
 
-    $reservation_form .= "<div class='nlp_email_data'><label for='nlp_email_verification'>Въведете email на който да получите потвърждение.</label><input type='text' name='nlp_email_verification' class='nlp_email_verification' /></div>";
-  
+    $reservation_form .= "<div class='nlp_email_data'><label for='nlp_email_verification'>Въведете email на който да получите потвърждение. *</label><input type='text' name='nlp_email_verification' class='nlp_email_verification' id='email_verification'/></div>";
+
     $reservation_form .="<div class='nlp_repeat_options'><label for='nlp_repeat_for_month'>Повторение на Събитието</label><select id='nlp_repeat_options'><option id='no_repeat' value='1'>Не</option><option id='nlp_certain_date' value='4'>По Дата</option><option id='nlp_repeat_weekly' value='2'>Седмично</option><option class='nlp_repeat_monthly' value='3'>Месечно</option></select></div>";
     $reservation_form .= "<div class='nlp_repeat_event_answer_wrapper'></div>";
     $reservation_form .= "</div>";
     $reservation_form .= "<div id='nlp_reserver_chosen_hours' class='button'>Резервирай</div>";
-
+    hide_not_menu_for_not_admin_users();
     return $reservation_form;
 }
 
@@ -476,15 +494,15 @@ add_shortcode('nlp_front_reservations', 'nlp_reservations_form');
  *  */
 
 function nlp_reservation_answer_to_client() {
-    if (isset($_POST['nlp_value_of_conf_email'],$_POST['nlp_value_of_hours'], $_POST['nlp_value_integer_month'], $_POST['nlp_value_integer_day'], $_POST['nlp_value_integer_year'], $_POST['value_of_chosen_hall'], $_POST['nlp_value_of_name']) && !empty($_POST['nlp_value_of_hours']) && !empty($_POST['nlp_value_of_conf_email']) && !empty($_POST['nlp_value_integer_month']) && !empty($_POST['nlp_value_integer_day']) && !empty($_POST['nlp_value_integer_year']) && !empty($_POST['value_of_chosen_hall']) && !empty($_POST['nlp_value_of_name'])) {
+    if (isset($_POST['nlp_value_of_conf_email'], $_POST['nlp_value_of_hours'], $_POST['nlp_value_integer_month'], $_POST['nlp_value_integer_day'], $_POST['nlp_value_integer_year'], $_POST['value_of_chosen_hall'], $_POST['nlp_value_of_name']) && !empty($_POST['nlp_value_of_hours']) && !empty($_POST['nlp_value_of_conf_email']) && !empty($_POST['nlp_value_integer_month']) && !empty($_POST['nlp_value_integer_day']) && !empty($_POST['nlp_value_integer_year']) && !empty($_POST['value_of_chosen_hall']) && !empty($_POST['nlp_value_of_name'])) {
         $date_current_month = filter_input(INPUT_POST, 'nlp_value_integer_month', FILTER_SANITIZE_NUMBER_INT);
         $date_current_day = filter_input(INPUT_POST, 'nlp_value_integer_day', FILTER_SANITIZE_NUMBER_INT);
         $date_current_year = filter_input(INPUT_POST, 'nlp_value_integer_year', FILTER_SANITIZE_NUMBER_INT);
         $selected_hall_id = filter_input(INPUT_POST, 'value_of_chosen_hall', FILTER_VALIDATE_INT);
         $event_name = filter_input(INPUT_POST, 'nlp_value_of_name', FILTER_SANITIZE_STRING);
-        $confirmation_email = filter_input(INPUT_POST,'nlp_value_of_conf_email', FILTER_SANITIZE_EMAIL);
-        $repeat_option_selected = filter_input(INPUT_POST,'nlp_value_of_repeat',FILTER_SANITIZE_NUMBER_INT);
-        $event_info = filter_input(INPUT_POST,'nlp_value_of_info',FILTER_SANITIZE_STRING);
+        $confirmation_email = filter_input(INPUT_POST, 'nlp_value_of_conf_email', FILTER_SANITIZE_EMAIL);
+        $repeat_option_selected = filter_input(INPUT_POST, 'nlp_value_of_repeat', FILTER_SANITIZE_NUMBER_INT);
+        $event_info = filter_input(INPUT_POST, 'nlp_value_of_info', FILTER_SANITIZE_STRING);
         $nlp_value_send_by_ajax = array();
 //         var_dump($_POST['nlp_value_of_hours']);
         foreach ($_POST['nlp_value_of_hours'] as $key => $val) {
@@ -497,7 +515,7 @@ function nlp_reservation_answer_to_client() {
                 array_push($nlp_value_send_by_ajax, $nlp_value_send_by_ajax_val);
             }
         }
-        
+
         foreach ($nlp_value_send_by_ajax as $key => $v) {
 
             if ($v == false) {
@@ -519,267 +537,255 @@ function nlp_reservation_answer_to_client() {
                 }
             }
         }
-       if($repeat_option_selected == 1){
-        $postdate = $date_current_year."-".$date_current_month."-"."$date_current_day"." 8:00:00";
-      
-                $post = array(
-          
-           'post_content'   => $event_info, // The full text of the post.
-           'post_name'      => $event_name, // The name (slug) for your post
-           'post_title'     => $event_name, // The title of your post.
-           'post_type'      => 'post', // Default 'post'.
-           'post_status'   => 'publish',
-           'post_date'      =>  $postdate,
-           'ping_status'    => 'closed' ,// Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
-         //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
-           'post_category'  => $selected_hall_id, // Default empty.
-          );  
-                $post_categories = array();
-          array_push($post_categories, $selected_hall_id);
-          
-         $post_id = wp_insert_post( $post);  
-         wp_set_post_categories( $post_id, $post_categories, false );
-          update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
-          echo "<div>Запазването на ".$date_current_year."-".$date_current_month."-"."$date_current_day"." беше успешно.</div>";
-       }else if($repeat_option_selected == 4){
-           if(isset($_POST['value_of_repeating_months'],$_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_number_of_months_to_repeat'])  && !empty($_POST['value_of_repeating_months'])){
-               $value_of_repeating_months = filter_input(INPUT_POST,'value_of_repeating_months', FILTER_SANITIZE_NUMBER_INT);
-               $value_number_of_months_to_repeat = filter_input(INPUT_POST,'value_number_of_months_to_repeat', FILTER_SANITIZE_NUMBER_INT);
+        if ($repeat_option_selected == 1) {
+            $postdate = $date_current_year . "-" . $date_current_month . "-" . "$date_current_day" . " 8:00:00";
+
+            $post = array(
+                'post_content' => $event_info, // The full text of the post.
+                'post_name' => $event_name, // The name (slug) for your post
+                'post_title' => $event_name, // The title of your post.
+                'post_type' => 'post', // Default 'post'.
+                'post_status' => 'publish',
+                'post_date' => $postdate,
+                'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+                //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+                'post_category' => $selected_hall_id, // Default empty.
+            );
+            $post_categories = array();
+            array_push($post_categories, $selected_hall_id);
+
+            $post_id = wp_insert_post($post);
+            wp_set_post_categories($post_id, $post_categories, false);
+            update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
+            echo "<div>Запазването на " . $date_current_year . "-" . $date_current_month . "-" . "$date_current_day" . " беше успешно.</div>";
+        } else if ($repeat_option_selected == 4) {
+            if (isset($_POST['value_of_repeating_months'], $_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_of_repeating_months'])) {
+                $value_of_repeating_months = filter_input(INPUT_POST, 'value_of_repeating_months', FILTER_SANITIZE_NUMBER_INT);
+                $value_number_of_months_to_repeat = filter_input(INPUT_POST, 'value_number_of_months_to_repeat', FILTER_SANITIZE_NUMBER_INT);
 //               if($value_number_of_months_to_repeat > 24){
 //                   $value_number_of_months_to_repeat = 12;
 //               }
-              
-               $new_month = $date_current_month;
-                if($value_of_repeating_months == 1){
-                       
-               for($i = 1; $i <= $value_number_of_months_to_repeat;$i++){
-                   if($i > 12 && $i <= 24){
-                           $k = $date_current_year + 1;
-                          
-                           $v = $i - 12;
-                         $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i <= 12){
-                             $postdate = $date_current_year . "-" . $new_month . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i > 24){
-                           $var2 = $i % 12;
-                    $var1 = round(($i - $var2) / 10);
-                   
-                           $p = $i - ($var1 * 12);
-                           $k = $var1 + $date_current_year;
-                          
+
+                $new_month = $date_current_month;
+                if ($value_of_repeating_months == 1) {
+
+                    for ($i = 1; $i <= $value_number_of_months_to_repeat; $i++) {
+                        if ($i > 12 && $i <= 24) {
+                            $k = $date_current_year + 1;
+
+                            $v = $i - 12;
+                            $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i <= 12) {
+                            $postdate = $date_current_year . "-" . $new_month . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i > 24) {
+                            $var2 = $i % 12;
+                            $var1 = round(($i - $var2) / 10);
+
+                            $p = $i - ($var1 * 12);
+                            $k = $var1 + $date_current_year;
+
                             $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
-                       }
-                   
+                        }
 
-                    $post = array(
-                        'post_content' => $event_info, // The full text of the post.
-                        'post_name' => $event_name, // The name (slug) for your post
-                        'post_title' => $event_name, // The title of your post.
-                        'post_type' => 'post', // Default 'post'.
-                        'post_status' => 'publish',
-                        'post_date' => $postdate,
-                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
-                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
-                        'post_category' => $selected_hall_id, // Default empty.
-                    );
-                    $post_categories = array();
-                    array_push($post_categories, $selected_hall_id);
 
-                    $post_id = wp_insert_post($post);
-                    wp_set_post_categories($post_id, $post_categories, false);
-                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
-                     $new_month++;
-                    
-                 
-               
-                   }
-       
-             }else if($value_of_repeating_months == 2){
-              
-                    for($i = $date_current_month;$i <= $value_number_of_months_to_repeat + $date_current_month;$i++,$i++){
-                         
-                       if($i > 12 && $i <= 24){
-                           $k = $date_current_year + 1;
-                          
-                           $v = $i - 12;
-                         $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i <= 12){
+                        $post = array(
+                            'post_content' => $event_info, // The full text of the post.
+                            'post_name' => $event_name, // The name (slug) for your post
+                            'post_title' => $event_name, // The title of your post.
+                            'post_type' => 'post', // Default 'post'.
+                            'post_status' => 'publish',
+                            'post_date' => $postdate,
+                            'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+                            //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+                            'post_category' => $selected_hall_id, // Default empty.
+                        );
+                        $post_categories = array();
+                        array_push($post_categories, $selected_hall_id);
+
+                        $post_id = wp_insert_post($post);
+                        wp_set_post_categories($post_id, $post_categories, false);
+                        update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
+                        $new_month++;
+                    }
+                } else if ($value_of_repeating_months == 2) {
+
+                    for ($i = $date_current_month; $i <= $value_number_of_months_to_repeat + $date_current_month; $i++, $i++) {
+
+                        if ($i > 12 && $i <= 24) {
+                            $k = $date_current_year + 1;
+
+                            $v = $i - 12;
+                            $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i <= 12) {
                             $postdate = $date_current_year . "-" . $i . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i > 24){
-                           $var2 = $i % 12;
-                    $var1 = round(($i - $var2) / 10);
-                   
-                           $p = $i - ($var1 * 12);
-                           $k = $var1 + $date_current_year;
-                          
-                            $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
-                       }
-                    $post = array(
-                        'post_content' => $event_info, // The full text of the post.
-                        'post_name' => $event_name, // The name (slug) for your post
-                        'post_title' => $event_name, // The title of your post.
-                        'post_type' => 'post', // Default 'post'.
-                        'post_status' => 'publish',
-                        'post_date' => $postdate,
-                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
-                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
-                        'post_category' => $selected_hall_id, // Default empty.
-                    );
-                    $post_categories = array();
-                    array_push($post_categories, $selected_hall_id);
+                        } else if ($i > 24) {
+                            $var2 = $i % 12;
+                            $var1 = round(($i - $var2) / 10);
 
-                    $post_id = wp_insert_post($post);
-                    wp_set_post_categories($post_id, $post_categories, false);
-                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
-                    
+                            $p = $i - ($var1 * 12);
+                            $k = $var1 + $date_current_year;
+
+                            $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
+                        }
+                        $post = array(
+                            'post_content' => $event_info, // The full text of the post.
+                            'post_name' => $event_name, // The name (slug) for your post
+                            'post_title' => $event_name, // The title of your post.
+                            'post_type' => 'post', // Default 'post'.
+                            'post_status' => 'publish',
+                            'post_date' => $postdate,
+                            'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+                            //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+                            'post_category' => $selected_hall_id, // Default empty.
+                        );
+                        $post_categories = array();
+                        array_push($post_categories, $selected_hall_id);
+
+                        $post_id = wp_insert_post($post);
+                        wp_set_post_categories($post_id, $post_categories, false);
+                        update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
                     }
-                   
-                   }else if($value_of_repeating_months == 3){
-                       for($i = $date_current_month;$i <= $value_number_of_months_to_repeat + $date_current_month;$i++,$i++,$i++){
-                        
-                      
-                        if($i > 12 && $i <= 24){
-                           $k = $date_current_year + 1;
-                          
-                           $v = $i - 12;
-                         $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i <= 12){
+                } else if ($value_of_repeating_months == 3) {
+                    for ($i = $date_current_month; $i <= $value_number_of_months_to_repeat + $date_current_month; $i++, $i++, $i++) {
+
+
+                        if ($i > 12 && $i <= 24) {
+                            $k = $date_current_year + 1;
+
+                            $v = $i - 12;
+                            $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i <= 12) {
                             $postdate = $date_current_year . "-" . $i . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i > 24){
-                           $var2 = $i % 12;
-                    $var1 = round(($i - $var2) / 10);
-                   
-                           $p = $i - ($var1 * 12);
-                           $k = $var1 + $date_current_year;
-                          
-                            $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
-                       }
-                        
-//           
-                    $post = array(
-                        'post_content' => $event_info, // The full text of the post.
-                        'post_name' => $event_name, // The name (slug) for your post
-                        'post_title' => $event_name, // The title of your post.
-                        'post_type' => 'post', // Default 'post'.
-                        'post_status' => 'publish',
-                        'post_date' => $postdate,
-                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
-                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
-                        'post_category' => $selected_hall_id, // Default empty.
-                    );
-                    $post_categories = array();
-                    array_push($post_categories, $selected_hall_id);
+                        } else if ($i > 24) {
+                            $var2 = $i % 12;
+                            $var1 = round(($i - $var2) / 10);
 
-                    $post_id = wp_insert_post($post);
-                    wp_set_post_categories($post_id, $post_categories, false);
-                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
-                  
-                    }
-                
-                   }else if($value_of_repeating_months == 4){
-                          for($i = $date_current_month;$i <= $value_number_of_months_to_repeat + $date_current_month;$i++,$i++,$i++,$i++){
-                        
-                         if($i > 12 && $i <= 24){
-                           $k = $date_current_year + 1;
-                          
-                           $v = $i - 12;
-                         $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i <= 12){
-                             $postdate = $date_current_year . "-" . $i . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i > 24){
-                           $var2 = $i % 12;
-                    $var1 = round(($i - $var2) / 10);
-                   
-                           $p = $i - ($var1 * 12);
-                           $k = $var1 + $date_current_year;
-                          
-                            $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
-                       }
-                        
-                       
-                       
-//           
-                    $post = array(
-                        'post_content' => $event_info, // The full text of the post.
-                        'post_name' => $event_name, // The name (slug) for your post
-                        'post_title' => $event_name, // The title of your post.
-                        'post_type' => 'post', // Default 'post'.
-                        'post_status' => 'publish',
-                        'post_date' => $postdate,
-                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
-                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
-                        'post_category' => $selected_hall_id, // Default empty.
-                    );
-                    $post_categories = array();
-                    array_push($post_categories, $selected_hall_id);
+                            $p = $i - ($var1 * 12);
+                            $k = $var1 + $date_current_year;
 
-                    $post_id = wp_insert_post($post);
-                    wp_set_post_categories($post_id, $post_categories, false);
-                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
-                  
-                    }
-                   }else if($value_of_repeating_months == 6){
-                           for($i = $date_current_month;$i <= $value_number_of_months_to_repeat + $date_current_month;$i++,$i++,$i++,$i++,$i++,$i++){
-                        
-                         if($i > 12 && $i <= 24){
-                           $k = $date_current_year + 1;
-                          
-                           $v = $i - 12;
-                         $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i <= 12){
-                             $postdate = $date_current_year . "-" . $i . "-" . "$date_current_day" . " 8:00:00";
-                       }else if($i > 24){
-                           $var2 = $i % 12;
-                    $var1 = round(($i - $var2) / 10);
-                   
-                           $p = $i - ($var1 * 12);
-                           $k = $var1 + $date_current_year;
-                          
                             $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
-                       }
-                        
-                       
-                       
-//           
-                    $post = array(
-                        'post_content' => $event_info, // The full text of the post.
-                        'post_name' => $event_name, // The name (slug) for your post
-                        'post_title' => $event_name, // The title of your post.
-                        'post_type' => 'post', // Default 'post'.
-                        'post_status' => 'publish',
-                        'post_date' => $postdate,
-                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
-                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
-                        'post_category' => $selected_hall_id, // Default empty.
-                    );
-                    $post_categories = array();
-                    array_push($post_categories, $selected_hall_id);
+                        }
 
-                    $post_id = wp_insert_post($post);
-                    wp_set_post_categories($post_id, $post_categories, false);
-                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
-                  
+//           
+                        $post = array(
+                            'post_content' => $event_info, // The full text of the post.
+                            'post_name' => $event_name, // The name (slug) for your post
+                            'post_title' => $event_name, // The title of your post.
+                            'post_type' => 'post', // Default 'post'.
+                            'post_status' => 'publish',
+                            'post_date' => $postdate,
+                            'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+                            //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+                            'post_category' => $selected_hall_id, // Default empty.
+                        );
+                        $post_categories = array();
+                        array_push($post_categories, $selected_hall_id);
+
+                        $post_id = wp_insert_post($post);
+                        wp_set_post_categories($post_id, $post_categories, false);
+                        update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
                     }
-                   }
-           }
-       }else if($repeat_option_selected == 2){
-           //sedmichna funckiq za zapazvane tuk , mnogo razburkano inache 
+                } else if ($value_of_repeating_months == 4) {
+                    for ($i = $date_current_month; $i <= $value_number_of_months_to_repeat + $date_current_month; $i++, $i++, $i++, $i++) {
+
+                        if ($i > 12 && $i <= 24) {
+                            $k = $date_current_year + 1;
+
+                            $v = $i - 12;
+                            $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i <= 12) {
+                            $postdate = $date_current_year . "-" . $i . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i > 24) {
+                            $var2 = $i % 12;
+                            $var1 = round(($i - $var2) / 10);
+
+                            $p = $i - ($var1 * 12);
+                            $k = $var1 + $date_current_year;
+
+                            $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
+                        }
+
+
+
+//           
+                        $post = array(
+                            'post_content' => $event_info, // The full text of the post.
+                            'post_name' => $event_name, // The name (slug) for your post
+                            'post_title' => $event_name, // The title of your post.
+                            'post_type' => 'post', // Default 'post'.
+                            'post_status' => 'publish',
+                            'post_date' => $postdate,
+                            'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+                            //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+                            'post_category' => $selected_hall_id, // Default empty.
+                        );
+                        $post_categories = array();
+                        array_push($post_categories, $selected_hall_id);
+
+                        $post_id = wp_insert_post($post);
+                        wp_set_post_categories($post_id, $post_categories, false);
+                        update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
+                    }
+                } else if ($value_of_repeating_months == 6) {
+                    for ($i = $date_current_month; $i <= $value_number_of_months_to_repeat + $date_current_month; $i++, $i++, $i++, $i++, $i++, $i++) {
+
+                        if ($i > 12 && $i <= 24) {
+                            $k = $date_current_year + 1;
+
+                            $v = $i - 12;
+                            $postdate = $k . "-" . $v . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i <= 12) {
+                            $postdate = $date_current_year . "-" . $i . "-" . "$date_current_day" . " 8:00:00";
+                        } else if ($i > 24) {
+                            $var2 = $i % 12;
+                            $var1 = round(($i - $var2) / 10);
+
+                            $p = $i - ($var1 * 12);
+                            $k = $var1 + $date_current_year;
+
+                            $postdate = $k . "-" . $p . "-" . "$date_current_day" . " 8:00:00";
+                        }
+
+
+
+//           
+                        $post = array(
+                            'post_content' => $event_info, // The full text of the post.
+                            'post_name' => $event_name, // The name (slug) for your post
+                            'post_title' => $event_name, // The title of your post.
+                            'post_type' => 'post', // Default 'post'.
+                            'post_status' => 'publish',
+                            'post_date' => $postdate,
+                            'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+                            //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+                            'post_category' => $selected_hall_id, // Default empty.
+                        );
+                        $post_categories = array();
+                        array_push($post_categories, $selected_hall_id);
+
+                        $post_id = wp_insert_post($post);
+                        wp_set_post_categories($post_id, $post_categories, false);
+                        update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
+                    }
+                }
+            }
+        } else if ($repeat_option_selected == 2) {
+            //sedmichna funckiq za zapazvane tuk , mnogo razburkano inache 
             $date_current_month = filter_input(INPUT_POST, 'nlp_value_integer_month', FILTER_SANITIZE_NUMBER_INT);
-        $date_current_day = filter_input(INPUT_POST, 'nlp_value_integer_day', FILTER_SANITIZE_NUMBER_INT);
-        $date_current_year = filter_input(INPUT_POST, 'nlp_value_integer_year', FILTER_SANITIZE_NUMBER_INT);
-        $selected_hall_id = filter_input(INPUT_POST, 'value_of_chosen_hall', FILTER_VALIDATE_INT);
-        $event_name = filter_input(INPUT_POST, 'nlp_value_of_name', FILTER_SANITIZE_STRING);
-        $confirmation_email = filter_input(INPUT_POST,'nlp_value_of_conf_email', FILTER_SANITIZE_EMAIL);
-        $repeat_option_selected = filter_input(INPUT_POST,'nlp_value_of_repeat',FILTER_SANITIZE_NUMBER_INT);
-        $event_info = filter_input(INPUT_POST,'nlp_value_of_info',FILTER_SANITIZE_STRING);
-       
-           weekly_selected_save_reservation($date_current_month,$date_current_day,$date_current_year,$selected_hall_id,$event_name,$confirmation_email,$event_info,$nlp_value_send_by_ajax);
-           
-       }else if($repeat_option_selected == 3){
-           //mesechna funkciq tuk za zapazvane 
-           monthly_selected_save_reservation();
-       }
-   }
+            $date_current_day = filter_input(INPUT_POST, 'nlp_value_integer_day', FILTER_SANITIZE_NUMBER_INT);
+            $date_current_year = filter_input(INPUT_POST, 'nlp_value_integer_year', FILTER_SANITIZE_NUMBER_INT);
+            $selected_hall_id = filter_input(INPUT_POST, 'value_of_chosen_hall', FILTER_VALIDATE_INT);
+            $event_name = filter_input(INPUT_POST, 'nlp_value_of_name', FILTER_SANITIZE_STRING);
+            $confirmation_email = filter_input(INPUT_POST, 'nlp_value_of_conf_email', FILTER_SANITIZE_EMAIL);
+            $repeat_option_selected = filter_input(INPUT_POST, 'nlp_value_of_repeat', FILTER_SANITIZE_NUMBER_INT);
+            $event_info = filter_input(INPUT_POST, 'nlp_value_of_info', FILTER_SANITIZE_STRING);
+
+            weekly_selected_save_reservation($date_current_month, $date_current_day, $date_current_year, $selected_hall_id, $event_name, $confirmation_email, $event_info, $nlp_value_send_by_ajax);
+        } else if ($repeat_option_selected == 3) {
+            //mesechna funkciq tuk za zapazvane 
+            monthly_selected_save_reservation($date_current_month, $date_current_day, $date_current_year, $selected_hall_id, $event_name, $confirmation_email, $event_info, $nlp_value_send_by_ajax);
+        }
+    }
 }
 
 add_action('wp_ajax_nlp_reservation_answer_to_client', 'nlp_reservation_answer_to_client');
@@ -793,44 +799,54 @@ add_action('wp_ajax_nopriv_nlp_reservation_answer_to_client', 'nlp_reservation_a
  * po nadolu funkciq za prez vtornik ili 2 i t.n.
  * 
  *  */
-function weekly_selected_save_reservation($date_current_month,$date_current_day,$date_current_year,$selected_hall_id,$event_name,$confirmation_email,$event_info,$nlp_value_send_by_ajax){
-    if(isset($_POST['nlp_meta_data_for_day_of_week'],$_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_number_of_months_to_repeat']) && !empty($_POST['nlp_meta_data_for_day_of_week'])){
-          $value_number_of_months_to_repeat = filter_input(INPUT_POST,'value_number_of_months_to_repeat', FILTER_SANITIZE_NUMBER_INT);
-        $value_of_week_repeting = filter_input(INPUT_POST,'value_of_week_repeting', FILTER_SANITIZE_NUMBER_INT);
-        if($value_of_week_repeting == 100){
+
+function weekly_selected_save_reservation($date_current_month, $date_current_day, $date_current_year, $selected_hall_id, $event_name, $confirmation_email, $event_info, $nlp_value_send_by_ajax) {
+    if (isset($_POST['nlp_meta_data_for_day_of_week'], $_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_number_of_months_to_repeat']) && !empty($_POST['nlp_meta_data_for_day_of_week'])) {
+        $value_number_of_months_to_repeat = filter_input(INPUT_POST, 'value_number_of_months_to_repeat', FILTER_SANITIZE_NUMBER_INT);
+        $value_of_week_repeting = filter_input(INPUT_POST, 'value_of_week_repeting', FILTER_SANITIZE_NUMBER_INT);
+        if ($value_of_week_repeting == 100) {
             $value_of_week_repeting = 0;
         }
-        
-          $days_selected_array = array();
-        $value_of_nlp_repeat_if_free = filter_input(INPUT_POST,'value_of_nlp_repeat_if_free', FILTER_SANITIZE_STRING);
-          foreach($_POST['nlp_meta_data_for_day_of_week'] as $k => $data){
-             $days_of_week_selected = filter_var($data,FILTER_SANITIZE_NUMBER_INT);
-             if($k == 1){
-                 $days_selected_array['Mon'] = $data;
-             }else if ($k == 2){
-                 $days_selected_array['Tue'] = $data;
-             }else if($k == 3){
-                 $days_selected_array['Wed'] = $data;
-             }else if($k == 4){
-                 $days_selected_array['Thu'] = $data;
-             }else if($k == 5){
-                 $days_selected_array['Fri'] = $data;
-             }else if($k == 6){
-                 $days_selected_array['Sat'] = $data;
-             }else if($k == 7){
-                 $days_selected_array['Sun'] = $data;
-             }
+
+        $days_selected_array = array(
+            'Mon' => "",
+            'Tue' => "",
+            'Wed' => "",
+            'Thu' => "",
+            'Fri' => "",
+            'Sat' => "",
+            'Sun' => "",
+        );
+        $value_of_nlp_repeat_if_free = filter_input(INPUT_POST, 'value_of_nlp_repeat_if_free', FILTER_SANITIZE_STRING);
+        foreach ($_POST['nlp_meta_data_for_day_of_week'] as $k => $data) {
+            $days_of_week_selected = filter_var($data, FILTER_SANITIZE_NUMBER_INT);
+            if ($k == 1) {
+                $days_selected_array['Mon'] = $data;
+            } else if ($k == 2) {
+                $days_selected_array['Tue'] = $data;
+            } else if ($k == 3) {
+                $days_selected_array['Wed'] = $data;
+            } else if ($k == 4) {
+                $days_selected_array['Thu'] = $data;
+            } else if ($k == 5) {
+                $days_selected_array['Fri'] = $data;
+            } else if ($k == 6) {
+                $days_selected_array['Sat'] = $data;
+            } else if ($k == 7) {
+                $days_selected_array['Sun'] = $data;
+            }
 //             array_push($days_selected_array, $days_of_week_selected);
-         }
-         $dates_possible_and_not = array(
-             "da" => array(),
-             "ne" => array(),
-         );
-         $cnt = $value_of_week_repeting;
-         for($i = $date_current_month;$i <= $value_number_of_months_to_repeat + $date_current_month;$i++){
-              
-             $number = cal_days_in_month(CAL_GREGORIAN, $i, $date_current_year);
-             for($k = 1;$k <= $number;$k++){
+        }
+
+        $dates_possible_and_not = array(
+            "da" => array(),
+            "ne" => array(),
+        );
+        $cnt = $value_of_week_repeting;
+        for ($i = $date_current_month; $i <= $value_number_of_months_to_repeat + $date_current_month; $i++) {
+
+            $number = cal_days_in_month(CAL_GREGORIAN, $i, $date_current_year);
+            for ($k = 1; $k <= $number; $k++) {
                 if ($i > 12 && $i <= 24) {
                     $f = $date_current_year + 1;
 
@@ -847,46 +863,58 @@ function weekly_selected_save_reservation($date_current_month,$date_current_day,
 
                     $postdate = $f . "-" . $p . "-" . $k . " 8:00:00";
                 }
+
                 $free_reservation = array();
                 $day_name = check_day_of_week($postdate);
-                $day_taken_times = nlp_check_if_time_is_taken($postdate,$selected_hall_id);
-               
+
+                $day_taken_times = nlp_check_if_time_is_taken($postdate, $selected_hall_id);
+
                 foreach ($nlp_value_send_by_ajax as $kk => $vall) {
 
                     if ($vall != "") {
-                       
+
                         if ($day_taken_times[$kk] != "") {
                             $free_reservation[$postdate] = "ne";
                         }
-                    } 
+                    }
                 }
-               
-                foreach($days_selected_array as $key=> $val){
-                    
-                   
-                    if($val != "" && $day_name == $key){
-                    if($cnt > $value_of_week_repeting){
-                        $cnt = $value_of_week_repeting;
-                         
-                    }elseif($cnt < $value_of_week_repeting){
-                         $cnt++;
-                         
-                    }elseif($cnt == $value_of_week_repeting){
-                            if($free_reservation[$postdate] == "ne"){
-                                $dates_possible_and_not['ne'][$postdate] = "ne";
-                               
-                            }else{
-                               $dates_possible_and_not['da'][$postdate] = "da";
-                              
-                            }
-                            $cnt = 1;
-                        }  
+//tova e za denqt kojto trqbva da se zapzva (ponedelnik ili petuk ili i dvete i t.n.) tova raboti corektno
+                $get_sunday = $day_name;
+
+                if ($cnt == $value_of_week_repeting) {
+
+                    if ($days_selected_array[$day_name] != "") {
+                        // var_dump("----" . $postdate);
+                        if ($free_reservation[$postdate] == "ne") {
+                            $dates_possible_and_not['ne'][$postdate] = "ne";
+                            // var_dump($day_name);
+                        } else {
+                            $dates_possible_and_not['da'][$postdate] = "da";
+                            //var_dump($day_name);
+                        }
+                    }
+                    if ($get_sunday == "Sun") {
+                        $cnt = 1;
+                        //  var_dump($cnt . "inside");
+                    }
+                } elseif ($cnt < $value_of_week_repeting) {
+
+                    if ($get_sunday == "Sun") {
+                        $cnt++;
+                        //     var_dump("2-".$cnt);
+                    }
+                } elseif ($cnt > $value_of_week_repeting) {
+                    // var_dump($get_sunday);
+                    if ($get_sunday == "Sun") {
+                        $cnt = 1;
+                        //     var_dump("1-".$cnt);
                     }
                 }
             }
-         }
-         if($value_of_nlp_repeat_if_free == "Yes"){
-            foreach($dates_possible_and_not['da'] as $key=>$val){
+        }
+        if ($value_of_nlp_repeat_if_free == "Yes") {
+//              var_dump($dates_possible_and_not);
+            foreach ($dates_possible_and_not['da'] as $key => $val) {
               
                        $post = array(
                         'post_content' => $event_info, // The full text of the post.
@@ -907,27 +935,28 @@ function weekly_selected_save_reservation($date_current_month,$date_current_day,
                     update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
                 
             }
-             echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
-            foreach($dates_possible_and_not['ne'] as $kkk=>$bbbb){
-                echo "<p>".$kkk."</p>";
+            echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
+            foreach ($dates_possible_and_not['ne'] as $kkk => $bbbb) {
+                echo "<p>" . $kkk . "</p>";
             }
+//            var_dump($free_reservation);
             echo "<p>Свободните Часове са запазени.</p>";
             echo "</div>";
-         }else{
-              echo "<div class='nlp_possibilities'>";
-             foreach($dates_possible_and_not as $k => $b){
-                 if($k == "da"){
-                     echo "<div class='nlp_free_and_open'><h3>Свободни дати за дадените параметри</h3>";
-                 }else{
-                      echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
-                 }
-                 foreach($b as $d=>$s){
-                     echo "<p>".$d."</p>";
-                 }
-                 echo "</div>";
-             }
-             echo "</div>";
-         }
+        } else {
+            echo "<div class='nlp_possibilities'>";
+            foreach ($dates_possible_and_not as $k => $b) {
+                if ($k == "da") {
+                    echo "<div class='nlp_free_and_open'><h3>Свободни дати за дадените параметри</h3>";
+                } else {
+                    echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
+                }
+                foreach ($b as $d => $s) {
+                    echo "<p>" . $d . "</p>";
+                }
+                echo "</div>";
+            }
+            echo "</div>";
+        }
     }
 }
 
@@ -936,7 +965,8 @@ function weekly_selected_save_reservation($date_current_month,$date_current_day,
  * check if current day is a current day of the week 
  * 
  *  */
-function check_day_of_week($postdate){
+
+function check_day_of_week($postdate) {
     $date = new DateTime($postdate);
     $result = $date->format('D');
     return $result;
@@ -948,8 +978,242 @@ function check_day_of_week($postdate){
  * 
  * 
  *  */
-function monthly_selected_save_reservation(){
-    
+
+function monthly_selected_save_reservation($date_current_month, $date_current_day, $date_current_year, $selected_hall_id, $event_name, $confirmation_email, $event_info, $nlp_value_send_by_ajax) {
+    if (isset($_POST['nlp_meta_data_for_day_of_week'], $_POST['value_of_repeating_months'], $_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_number_of_months_to_repeat']) && !empty($_POST['value_number_of_months_to_repeat']) && !empty($_POST['nlp_meta_data_for_day_of_week'])) {
+        $value_number_of_months_to_repeat = filter_input(INPUT_POST, 'value_number_of_months_to_repeat', FILTER_SANITIZE_NUMBER_INT);
+        $value_of_week_repeting = filter_input(INPUT_POST, 'value_of_week_repeting', FILTER_SANITIZE_NUMBER_INT);
+        $value_of_repeating_months = filter_input(INPUT_POST, 'value_of_repeating_months', FILTER_SANITIZE_NUMBER_INT);
+
+        $days_selected_array = array(
+            'Mon' => "",
+            'Tue' => "",
+            'Wed' => "",
+            'Thu' => "",
+            'Fri' => "",
+            'Sat' => "",
+            'Sun' => "",
+        );
+        $value_of_nlp_repeat_if_free = filter_input(INPUT_POST, 'value_of_nlp_repeat_if_free', FILTER_SANITIZE_STRING);
+        foreach ($_POST['nlp_meta_data_for_day_of_week'] as $k => $data) {
+            $days_of_week_selected = filter_var($data, FILTER_SANITIZE_NUMBER_INT);
+            if ($k == 1) {
+                $days_selected_array['Mon'] = $data;
+            } else if ($k == 2) {
+                $days_selected_array['Tue'] = $data;
+            } else if ($k == 3) {
+                $days_selected_array['Wed'] = $data;
+            } else if ($k == 4) {
+                $days_selected_array['Thu'] = $data;
+            } else if ($k == 5) {
+                $days_selected_array['Fri'] = $data;
+            } else if ($k == 6) {
+                $days_selected_array['Sat'] = $data;
+            } else if ($k == 7) {
+                $days_selected_array['Sun'] = $data;
+            }
+//             array_push($days_selected_array, $days_of_week_selected);
+        }
+
+
+        $dates_possible_and_not = array(
+            "da" => array(),
+            "ne" => array(),
+        );
+
+        $cnt = $value_of_week_repeting;
+        $mnt_cnt = $value_of_repeating_months;
+        $year_incremented = $date_current_year;
+
+        for ($i = $date_current_month; $i <= $value_number_of_months_to_repeat + $date_current_month; $i++) {
+
+
+            if ($i > 12 && $i <= 24) {
+
+                $number = cal_days_in_month(CAL_GREGORIAN, ($i - 12), $year_incremented);
+            } elseif ($i > 24 && $i <= 36) {
+                // var_dump("IF ELSE 24 NUMBER");
+                $number = cal_days_in_month(CAL_GREGORIAN, ($i - 24), $year_incremented);
+            } elseif ($i > 36 && $i <= 48) {
+                $number = cal_days_in_month(CAL_GREGORIAN, ($i - 36), $year_incremented);
+            } elseif ($i > 48 && $i <= 60) {
+                $number = cal_days_in_month(CAL_GREGORIAN, ($i - 48), $year_incremented);
+            } elseif ($i > 60) {
+                $number = cal_days_in_month(CAL_GREGORIAN, ($i - 60), $year_incremented);
+            } else {
+                $number = cal_days_in_month(CAL_GREGORIAN, $i, $year_incremented);
+            }
+            //var_dump($number."alskodjhasjvdnqwbm,k;lasidhughqweqwleasd");
+            for ($k = 1; $k <= $number; $k++) {
+//                if ($i > 12) {
+//                     $year_incremented = $date_current_year + 1;
+//                    if($i == 13){
+//                       $mont_cnt  = 1;
+//                        $v = 1;
+//                    }elseif($i > 13){
+//                        $v = $i - 12  ;
+//                    }
+//                    var_dump($year_incremented."y1");
+
+                if ($i > 12 && $i <= 24) {
+                    //       var_dump("<p>ssss". ($i-12) ."</p>");
+                    $postdate = $year_incremented . "-" . ($i - 12) . "-" . $k . " 8:00:00";
+                    //   var_dump($year_incremented."y1".$year_incremented . "-" . $i-12 . "-" . $k . " 8:00:00");
+                } elseif ($i > 24 && $i <= 36) {
+
+                    $postdate = $year_incremented . "-" . ($i - 24) . "-" . $k . " 8:00:00";
+                    // var_dump($year_incremented."y2".$postdate);
+                } elseif ($i > 36 && $i <= 48) {
+
+                    $postdate = $year_incremented . "-" . ($i - 36) . "-" . $k . " 8:00:00";
+                    // var_dump($year_incremented."y3".$postdate);
+                } elseif ($i > 48 && $i <= 60) {
+                    $postdate = $year_incremented . "-" . ($i - 48) . "-" . $k . " 8:00:00";
+                    // var_dump($year_incremented."y4".$postdate);
+                } elseif ($i > 60) {
+                    $postdate = $year_incremented . "-" . ($i - 60) . "-" . $k . " 8:00:00";
+                    //  var_dump($year_incremented."y5".$postdate);
+                } else {
+                    // var_dump($year_incremented."y");
+                    $postdate = $year_incremented . "-" . $i . "-" . $k . " 8:00:00";
+                }
+//                    $postdate = $year_incremented . "-" . $i . "-" . $k . " 8:00:00";
+                //var_dump($postdate." NIE");
+//                } else if ($i <= 12) {
+//                    $postdate = $date_current_year . "-" . $i . "-" . $k . " 8:00:00";
+//                } else if ($i > 24) {
+//                    $var2 = $i % 12;
+//                    $var1  = (int)round(($i - $var2) / 10);
+//                    var_dump($var1."var1");
+//                    var_dump($var2."var2");
+//                    $p = $i - ($var1 * 12);
+//                    $year_incremented = $var1 + $date_current_year;
+//                    var_dump('<p>'.$var1."date curent year".$date_current_year."</p>");
+//                    $postdate = $year_incremented . "-" . $p . "-" . $k . " 8:00:00";
+//                    
+//                }
+
+                $free_reservation = array();
+                //  var_dump("<p>".$postdate."MAJKA TI </p>");
+                $day_name = check_day_of_week($postdate);
+
+                $day_taken_times = nlp_check_if_time_is_taken($postdate, $selected_hall_id);
+
+                foreach ($nlp_value_send_by_ajax as $kk => $vall) {
+
+                    if ($vall != "") {
+
+                        if ($day_taken_times[$kk] != "") {
+                            $free_reservation[$postdate] = "ne";
+                        }
+                    }
+                }
+//tova e za denqt kojto trqbva da se zapzva (ponedelnik ili petuk ili i dvete i t.n.) tova raboti corektno
+                $get_sunday = $day_name;
+
+                if ($cnt == $value_of_week_repeting) {
+
+                    if ($days_selected_array[$day_name] != "") {
+//                             var_dump("----" . $postdate);
+                        if ($free_reservation[$postdate] == "ne") {
+                            $dates_possible_and_not['ne'][$postdate] = "ne";
+                            // var_dump($day_name);
+                        } else {
+                            $dates_possible_and_not['da'][$postdate] = "da";
+                            //var_dump($day_name);
+                        }
+                    }
+                    if ($get_sunday == "Sun") {
+                        $cnt = 1;
+//                            var_dump($cnt . "inside");
+                    }
+                } elseif ($cnt < $value_of_week_repeting) {
+
+                    if ($get_sunday == "Sun") {
+                        $cnt++;
+//                            var_dump("2-".$cnt);
+                    }
+                } elseif ($cnt > $value_of_week_repeting) {
+//                    var_dump("sund".$get_sunday);
+                    if ($get_sunday == "Sun") {
+                        $cnt = 1;
+//                            var_dump("1-".$cnt);
+                    }
+                }
+            }
+            if ($i > 12 && $i <= 24) {
+//                     var_dump(gregoriantojd($i-12,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                $jd = gregoriantojd(($i - 12), 1, $year_incremented);
+            } elseif ($i > 24 && $i <= 36) {
+//                           var_dump(gregoriantojd($i-24,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                $jd = gregoriantojd(($i - 24), 1, $year_incremented);
+            } elseif ($i > 36 && $i <= 48) {
+//                           var_dump(gregoriantojd($i-36,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                $jd = gregoriantojd(($i - 36), 1, $year_incremented);
+            } elseif ($i > 48 && $i <= 60) {
+//                           var_dump(gregoriantojd($i-48,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                $jd = gregoriantojd(($i - 48), 1, $year_incremented);
+            } elseif ($i > 60) {
+//                           var_dump(gregoriantojd($i-60,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                $jd = gregoriantojd(($i - 60), 1, $year_incremented);
+            } else {
+//                           var_dump(gregoriantojd($i,1,$year_incremented)."INNNNASDNASNDNASDNASDJASDHAKSUDHKWQHEKQWHE");
+                $jd = gregoriantojd($i, 1, $year_incremented);
+            }
+
+//            var_dump(jdmonthname($jd,0) . ":::::::".$jd);
+            //  die(var_dump(jdmonthname($jd,0)));
+            if (jdmonthname($jd, 0) == "Dec") {
+                $year_incremented++;
+                //  var_dump($year_incremented."poduhasjlkqwe");
+            }
+        }
+        if ($value_of_nlp_repeat_if_free == "Yes") {
+//              var_dump($dates_possible_and_not);
+            foreach ($dates_possible_and_not['da'] as $key => $val) {
+              
+                       $post = array(
+                        'post_content' => $event_info, // The full text of the post.
+                        'post_name' => $event_name, // The name (slug) for your post
+                        'post_title' => $event_name, // The title of your post.
+                        'post_type' => 'post', // Default 'post'.
+                        'post_status' => 'publish',
+                        'post_date' => $key,
+                        'ping_status' => 'closed', // Pingbacks or trackbacks allowed. Default is the option 'default_ping_status'.
+                        //  'post_excerpt'   => [ <string> ] // For all your post excerpt needs.
+                        'post_category' => $selected_hall_id, // Default empty.
+                    );
+                    $post_categories = array();
+                    array_push($post_categories, $selected_hall_id);
+
+                    $post_id = wp_insert_post($post);
+                    wp_set_post_categories($post_id, $post_categories, false);
+                    update_post_meta($post_id, 'nlp_html_for_meta_box_end_time', $nlp_value_send_by_ajax);
+                
+            }
+            echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
+            foreach ($dates_possible_and_not['ne'] as $kkk => $bbbb) {
+                echo "<p>" . $kkk . "</p>";
+            }
+//            var_dump($free_reservation);
+            echo "<p>Свободните Часове са запазени.</p>";
+            echo "</div>";
+        } else {
+            echo "<div class='nlp_possibilities'>";
+            foreach ($dates_possible_and_not as $k => $b) {
+                if ($k == "da") {
+                    echo "<div class='nlp_free_and_open'><h3>Свободни дати за дадените параметри</h3>";
+                } else {
+                    echo "<div class='nlp_reserved_and_close'><h3>Заети дати за дадените параметри</h3>";
+                }
+                foreach ($b as $d => $s) {
+                    echo "<p>" . $d . "</p>";
+                }
+                echo "</div>";
+            }
+            echo "</div>";
+        }
+    }
 }
 
 /*
@@ -1054,7 +1318,7 @@ function nlp_free_hours_of_a_hall_for_one_day($hall_number, $date_input) {
         }
     }
     $val_sorted = asort($real_data);
-    var_dump($real_data);
+//    var_dump($real_data);
     return $real_data;
 }
 
@@ -1064,7 +1328,7 @@ function nlp_free_hours_of_a_hall_for_one_day($hall_number, $date_input) {
  * depricated 
  * 
  *  */
-//Ne vaji tazi funkciq
+
 function nlp_reservation_form() {
     $reservation_form = "";
     $all_halls_id_names = array();
@@ -1113,6 +1377,7 @@ function nlp_reservation_form() {
     $reservation_form .='</select>';
     $reservation_form .="<div class='nlp_returned_data'></div>";
     $reservation_form .= "</div>";
+    hide_not_menu_for_not_admin_users();
     return $reservation_form;
 }
 
@@ -1122,8 +1387,7 @@ add_shortcode('nlp_front_reservation', 'nlp_reservation_form');
  * 
  * 
  *  */
-//HTML za reg formata na chasovete po dni (data)
-//Moje i da e deprikated
+
 function nlp_ajax_setter_for_reservation() {
 //    if (isset($_POST['nlp_value_integer_send']) && !empty($_POST['nlp_value_integer_send'])) {
 //        $category_term_id = filter_input(INPUT_POST, 'nlp_value_integer_send', FILTER_SANITIZE_NUMBER_INT);
@@ -1140,7 +1404,7 @@ function nlp_ajax_setter_for_reservation() {
 
     $return_possible_days_months .= "<select id='nlp_year'>";
     $return_possible_days_months .='<option id="nlp_possible_year" value="' . ($date_current_year + 2000) . '">' . ($date_current_year + 2000) . "</option>";
-    for ($k = (2000 + $date_current_year) + 10; $k >= ($date_current_year + 2000) - 10; $k--) {
+    for ($k = (2000 + $date_current_year); $k <= ($date_current_year + 2000) + 10; $k++) {
         if ($k != $date_current_year + 2000) {
             $return_possible_days_months .='<option id="nlp_possible_year" value="' . $k . '">' . $k . "</option>";
         }
@@ -1149,7 +1413,7 @@ function nlp_ajax_setter_for_reservation() {
     $return_possible_days_months .= "</select>";
     $return_possible_days_months .= "<div class='nlp_days_of_month'></div>";
     $return_possible_days_months .= "<div class='nlp_taken_hours_for_day'></div>";
-    $return_possible_days_months .= "<div class='nlp_name_holder'><label for='nlp_name_of_lection'>Име на Събитието</label><input type='text' size='50' name='nlp_name_of_lection' class='nlp_name_of_lection'> </div>";
+    $return_possible_days_months .= "<div class='nlp_name_holder'><label for='nlp_name_of_lection'>Име на Събитието *</label><input type='text' size='50' name='nlp_name_of_lection' class='nlp_name_of_lection' id='name_of_lection' </div>";
     $return_possible_days_months .= "<div class='nlp_more_information_for_event'><label for='nlp_event_information'>Повече информация за Събитието</label><textarea  name='nlp_event_information' class='nlp_event_information' rows='4' cols='50'></textarea></div>";
 
     return $return_possible_days_months;
@@ -1164,7 +1428,7 @@ function nlp_ajax_setter_for_reservation() {
  * ajax za dnite ot dadeniqt mesec (razlichen broj neobhodimo dinamichno promenqne)
  * 
  *  */
-//Imeto na funkciqta da se proveri v javascript-a
+
 function nlp_day_of_month() {
 
     if (isset($_POST['nlp_value_integer_month'], $_POST['nlp_value_integer_year']) && !empty($_POST['nlp_value_integer_month']) && !empty($_POST['nlp_value_integer_year'])) {
@@ -1176,9 +1440,9 @@ function nlp_day_of_month() {
         for ($i = 1; $i <= $days_in_month; $i++) {
             $day_name_class = nlp_return_day_name_english($date_current_month, $date_current_year, $i);
             if ($i == 1) {
-                $return_days .= nlp_calendar_view($day_name_class) . "<div class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_current_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_current_month, $date_current_year, $i) . "'> (" . $i . ")</div>";
+                $return_days .= nlp_calendar_view($day_name_class) . "<div  id='" . $i . "' class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_current_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_current_month, $date_current_year, $i) . "'> " . $i . "</div>";
             } else {
-                $return_days .= "<div class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_current_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_current_month, $date_current_year, $i) . "'> (" . $i . ")</div>";
+                $return_days .= "<div  id='" . $i . "' class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_current_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_current_month, $date_current_year, $i) . "'> " . $i . "</div>";
             }
         }
         $return_days .= "</div>";
@@ -1188,6 +1452,40 @@ function nlp_day_of_month() {
 
 add_action('wp_ajax_nlp_day_of_month', 'nlp_day_of_month');
 add_action('wp_ajax_nopriv_nlp_day_of_month', 'nlp_day_of_month');
+
+/*
+
+ * ajax za mesecite
+ * 
+ *  */
+
+function nlp_months_front_change() {
+
+    if (isset($_POST['nlp_value_integer_year']) && !empty($_POST['nlp_value_integer_year'])) {
+        $date_current_month = date('m');
+
+        $date_current_years = date('y');
+
+        $date_current_year = filter_input(INPUT_POST, 'nlp_value_integer_year', FILTER_SANITIZE_NUMBER_INT);
+        if ($date_current_year != ($date_current_years + 2000)) {
+
+
+
+            for ($i = 1; $i <= 12; $i++) {
+                $return_possible_days_months .='<div class="nlp_possible_month" id="' . $i . '">' . nlp_return_month_name($i) . "</div>";
+            }
+        } else {
+
+            for ($i = $date_current_month; $i <= 12; $i++) {
+                $return_possible_days_months .='<div class="nlp_possible_month" id="' . $i . '">' . nlp_return_month_name($i) . "</div>";
+            }
+        }
+        echo $return_possible_days_months;
+    }
+}
+
+add_action('wp_ajax_nlp_months_front_change', 'nlp_months_front_change');
+add_action('wp_ajax_nopriv_nlp_months_front_change', 'nlp_months_front_change');
 
 
 /*
@@ -1219,7 +1517,7 @@ function nlp_calendar_view($name) {
 
 
  * ajax za vrushtane na svobodnite blockove za izbraniqt den
- *  Za protrebitelite
+ *  
  *  */
 
 function nlp_day_ajax_reservate_posts() {
@@ -1355,7 +1653,7 @@ add_action('wp_ajax_nopriv_nlp_day_ajax_reservate_post', 'nlp_day_ajax_reservate
 
  * 
  * PARAM
- * @month  integer za meseca koito e izbran za prevod na rabiraem ezik 
+ * @month  integer za moeseca koito e izbran za prevod na rabiraem ezik 
  * 
  *  */
 
@@ -1383,7 +1681,7 @@ function nlp_return_month_name($month) {
             return "Юли";
             break;
         case(8):
-            return "Авг"; 
+            return "Авг";
             break;
         case(9):
             return "Сеп";
@@ -1479,7 +1777,7 @@ function nlp_check_date_for_reservation() {
  * funkciq za vrushtane na forma za povtorenie na eventa
  * 
  *  */
-//Ajax-va funkciq pri izbirane povtarqemost na zaqwkata
+
 function nlp_repeat_event_chosen() {
     if (isset($_POST['nlp_value_ichecked']) && !empty($_POST['nlp_value_ichecked'])) {
         $value_of_checkbox = filter_input(INPUT_POST, 'nlp_value_ichecked', FILTER_VALIDATE_INT);
@@ -1487,7 +1785,7 @@ function nlp_repeat_event_chosen() {
 
         if ($value_of_checkbox == 2) {
             $register_repeat .= "<div class='nlp_repeat_weeakly_wrapper'>";
-            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_all' value='100'> седмица</option><option id='nlp_week_one' value='1'>1 седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
+            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_all' value='1'> седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
             $register_repeat .="<div class='nlp_each_week_day_chosen_wrapper'><label for='nlp_each_week_day_chosen'>Да се повтаря в :</label><input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>В<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Ч<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Н";
             $register_repeat .= "<p class='nlp_repeat_inforamtion'> ! Начало се смята текущо вкараната дата и час по-горе във формата. !</p>";
             $register_repeat .= "<div class='nlp_repeat_possible'><input type='checkbox' class='nlp_repeat_if_free' name='nlp_repeat_if_free' />Ако има заети дати ,запази всички без заетите.<p>Забележка! Ако не изберете тази опиция и часовете са заети ,ще ви бъдат показани датите на който неможете да запазите часове.</p></div>";
@@ -1499,25 +1797,26 @@ function nlp_repeat_event_chosen() {
             echo $register_repeat;
         } else if ($value_of_checkbox == 3) {
             $register_repeat .= "<div class='nlp_repeat_montly_wrapper'>";
-            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_all' value='100'> седмица</option><option id='nlp_week_one' value='1'>1 седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
+            $register_repeat .= "<label for='nlp_each_week'>Да се повтаря всяка</label><select id='nlp_each_week'><option id='nlp_week_one' value='1'> седмица</option><option id='nlp_week_two' value='2'>2 седмици</option><option id='nlp_week_three' value='3'>3 седмици</option><option id='nlp_week_four' value='4'>4 седмици</option></select>";
             $register_repeat .="<div class='nlp_each_week_day_chosen_wrapper'><label for='nlp_each_week_day_chosen'>Да се повтаря в :</label><input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>В<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Ч<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>П<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>С<input type='checkbox' name='nlp_each_week_day_chosen' class='nlp_each_week_day_chosen'/>Н";
             $register_repeat .= "<p class='nlp_repeat_inforamtion'> ! Начало се смята текущо вкараната дата и час по-горе във формата. !</p>";
             $register_repeat .= "<div class='nlp_monly_repeat_wrapper_each'><label for='nlp_each_month'>Да се повтаря всeки</label><select id='nlp_each_month'><option id='nlp_month_one' value='1'> Месец</option><option id='nlp_month_two' value='2'> 2-ри Месеца</option><option id='nlp_month_three' value='3'> 3-ти Месеца</option><option id='nlp_month_four' value='4'> 4-ти Месеца</option><option id='nlp_month_six' value='6'> 6-ти Месеца</option></select>";
 
             $register_repeat .= "<div class='nlp_monly_repeat_times'><label for='nlp_number_of_months'>Да се повтаря в продължение на </label><input type='text' maxlength='4' size='4' name='nlp_number_of_months' class='nlp_number_of_months' /> Месеца </div>";
+            $register_repeat .= "<div class='nlp_repeat_possible'><input type='checkbox' class='nlp_repeat_if_free' name='nlp_repeat_if_free' />Ако има заети дати ,запази всички без заетите.<p>Забележка! Ако не изберете тази опиция и часовете са заети ,ще ви бъдат показани датите на който неможете да запазите часове.</p></div>";
 
             $register_repeat .="</div>";
             $register_repeat .="</div>";
 
             echo $register_repeat;
-        }else if($value_of_checkbox == 4){
+        } else if ($value_of_checkbox == 4) {
             $register_repeat .= "<div class='nlp_repeat_montly_wrapper'>";
             $register_repeat .= "<p class='nlp_day_info'>Текущо избраната дата се приема за избраната дата за повторение.</p>";
 //            $register_repeat .= "<label for='nlp_each_week'>Дата на повтаряне </label><select id='nlp_day_for_repeat'><option id='nlp_day_one' value='1'> 1-ви</option><option id='nlp_day_two' value='2'> 2-ри</option><option id='nlp_day_three' value='3'> 3-ти</option><option id='nlp_day_four' value='4'> 4-ти</option><option id='nlp_day_five' value='5'> 5-ти</option><option id='nlp_day_six' value='6'> 6-ти</option>"
 //                    . "<option id='nlp_day_seven' value='7'> 7-ми</option><option id='nlp_day_eight' value='8'> 8-ми</option><option id='nlp_day_nine' value='9'> 9-ти</option><option id='nlp_day_ten' value='10'> 10-ти</option><option id='nlp_day_eleven' value='11'> 11-ти</option><option value='12'> 12-ти</option><option value='13'> 13-ти</option><option value='14'> 14-ти</option><option value='15'> 15-ти</option><option value='16'> 16-ти</option>"
 //                    . "<option value='17'> 17-ти</option><option value='18'> 18-ти</option><option value='19'> 19-ти</option><option value='20'> 20-ти</option><option value='21'> 21-ви</option><option value='22'> 22-ри</option><option value='23'> 23-ти</option><option value='24'> 24-ти</option><option value='25'> 25-ти</option><option value='26'> 26-ти</option><option value='27'> 27-ми</option>"
 //                    . "<option value='28'> 28-ми</option><option value='29'> 29-ти</option><option value='30'> 30-ти</option><option value='31'> 31-ви</option></select>";
-             $register_repeat .= "<div class='nlp_monly_repeat_wrapper_each'><label for='nlp_each_month'>Да се повтаря всeки</label><select id='nlp_each_month'><option id='nlp_month_one' value='1'> Месец</option><option id='nlp_month_two' value='2'> 2-ри Месеца</option><option id='nlp_month_three' value='3'> 3-ти Месеца</option><option id='nlp_month_four' value='4'> 4-ти Месеца</option><option id='nlp_month_six' value='6'> 6-ти Месеца</option></select>";
+            $register_repeat .= "<div class='nlp_monly_repeat_wrapper_each'><label for='nlp_each_month'>Да се повтаря всeки</label><select id='nlp_each_month'><option id='nlp_month_one' value='1'> Месец</option><option id='nlp_month_two' value='2'> 2-ри Месеца</option><option id='nlp_month_three' value='3'> 3-ти Месеца</option><option id='nlp_month_four' value='4'> 4-ти Месеца</option><option id='nlp_month_six' value='6'> 6-ти Месеца</option></select>";
 
             $register_repeat .= "<div class='nlp_monly_repeat_times'><label for='nlp_number_of_months'>Да се повтаря в продължение на </label><input type='text' maxlength='4' size='4' name='nlp_number_of_months' class='nlp_number_of_months' /> Месеца </div>";
 
@@ -1542,7 +1841,7 @@ add_action('wp_ajax_nopriv_nlp_repeat_event_chosen', 'nlp_repeat_event_chosen');
 
 function nlp_day_of_months_front() {
 
-       $all_halls_id_names = array();
+    $all_halls_id_names = array();
     $args = array(
         'type' => 'post',
         'orderby' => 'id',
@@ -1551,86 +1850,274 @@ function nlp_day_of_months_front() {
         'taxonomy' => 'category',
         'pad_counts' => false
     );
-    $halls_query = get_categories($args);
+    $halls_query = get_categories();
     $cnt = 0;
     foreach ($halls_query as $object_index => $category) {
         if ($object_index != 0) {
             foreach ($category as $data_key => $data) {
 
                 if ($data_key == 'term_id') {
-                    array_push( $all_halls_id_names,$data);
+                    array_push($all_halls_id_names, $data);
                 }
             }
         }
     }
-    
 
-    
-        $return_days = "<div class='nlp_view_wrapper'><div class='nlp_week_show'>Седмично</div>";
-        $return_days .= "<div class='nlp_month_show'>Месечно</div>";
-         $return_days .= "<div class='nlp_year_show'>Годишно</div></div>";
-       
-        $return_days .= "<div class='nlp_calendar_navigation'><div class='nlp_calendar_back'>Предишен</div><div class='nlp_calendar_next'>Следващ</div></div>";
-        $return_days .="<div class='nlp_week_day_names_calendar'><div class='nlp_week_name_day'>Понеделник</div><div class='nlp_week_name_day'>Вторник</div><div class='nlp_week_name_day'>Сряда</div><div class='nlp_week_name_day'>Четвъртък</div><div class='nlp_week_name_day'>Петък</div><div class='nlp_week_name_day'>Събота</div><div class='nlp_week_name_day'>Неделя</div></div>";
-       $return_days .= "<div id='nlp_selected_day'>";
-        for($k = 1;$k <= 12;$k++){
-             $date_first_month = $k;
+    $cnt = true;
+    $return_days = '<div class="nlp_select_calendar_view">';
+    foreach ($all_halls_id_names as $indexss => $valuess) {
+        $cat_data = get_categories();
+
+        if (isset($cat_data[$indexss]) && !empty($cat_data[$indexss])) {
+            if ($cnt) {
+                $return_days .= '<div class="nlp_category_to_select selected_cat_class">';
+                $cnt = false;
+            } else {
+                $return_days .= '<div class="nlp_category_to_select">';
+            }
+            $return_days .= '<div class="cat_name" id="' . $valuess . '">' . $cat_data[$indexss]->name . '</div>';
+            $return_days .= '</div>';
+        }
+    }
+
+    $return_days .= '</div>';
+    $return_days .= "<div class='nlp_view_wrapper'>";
+
+    $return_days .= "<div class='nlp_week_show'>Седмично</div>";
+    $return_days .= "<div class='nlp_month_show'>Месечно</div>";
+    $return_days .= "<div class='nlp_year_show'>Годишно</div></div>";
+
+
+    $date_current_years = date('y');
+
+    $return_days .= "<div class='nlp_calendar_navigation'><div class='nlp_calendar_back'>Предишен</div><div class='nlp_calendar_next'>Следващ</div></div>";
+    //For dialog box - which show the calender content
+    $return_days .= "<div id='nlp_show_content'></div>";
+    $return_days .= "<div class='curent_mnth_year'><div class='super_month'>" . 1 . ".</div><div class='super_year'>" . ($date_current_years + 2000) . "</div></div>";
+    $return_days .="<div class='nlp_week_day_names_calendar'><div class='nlp_week_name_day'>Понеделник</div><div class='nlp_week_name_day'>Вторник</div><div class='nlp_week_name_day'>Сряда</div><div class='nlp_week_name_day'>Четвъртък</div><div class='nlp_week_name_day'>Петък</div><div class='nlp_week_name_day'>Събота</div><div class='nlp_week_name_day'>Неделя</div></div>";
+
+    $return_days .= "<div id='nlp_selected_day'>";
+    for ($k = 1; $k <= 12; $k++) {
+        $date_first_month = $k;
+        $date_current_year = date('y');
+
+        $days_in_month = cal_days_in_month(CAL_GREGORIAN, $date_first_month, $date_current_year);
+        $return_days .= "<div class='nlp_months'>";
+        for ($i = 1; $i <= $days_in_month; $i++) {
+            $day_name_class = nlp_return_day_name_english($date_first_month, $date_current_year, $i);
+            if ($i == 1) {
+                $inner_days_info = "";
+                $inner_days_info .= "<div>";
+                $taken_or_not = nlp_check_if_time_is_taken(($date_current_year + 2000 ) . "-" . $date_first_month . "-" . $i, $all_halls_id_names[0]);
+                $taken_or_not_info = nlp_check_if_time_is_taken_post(($date_current_year + 2000 ) . "-" . $date_first_month . "-" . $i, $all_halls_id_names[0]);
+
+
+                if (!empty($taken_or_not)) {
+                    foreach ($taken_or_not as $key => $index) {
+
+                        if ($index != "") {
+                            $inner_days_info .= "<div>" . nlp_human_translator_blocks($key) . " </div>";
+                        }
+                    }
+                }
+                //  $inner_days_info .= '<div class="hidden_info"><div class="hidden_title">' . get_the_title($taken_or_not_info) . '</div><div class="hidden_description">' . get_the_content($taken_or_not_info) . '</div></div>';
+
+                $inner_days_info .="</div>";
+
+                $return_days .= nlp_calendar_view($day_name_class) . "<div  id='" . $i . "' class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_first_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_first_month, $date_current_year, $i) . "'> " . $i . "" . $inner_days_info . "</div>";
+            } else {
+                $inner_days_info = "";
+                $inner_days_info .= "<div class='calendar_day_container'>";
+                $taken_or_not = nlp_check_if_time_is_taken(($date_current_year + 2000 ) . "-" . $date_first_month . "-" . $i, $all_halls_id_names[0]);
+                $taken_or_not_info = nlp_check_if_time_is_taken_post(($date_current_year + 2000 ) . "-" . $date_first_month . "-" . $i, $all_halls_id_names[0]);
+
+
+                if (!empty($taken_or_not)) {
+                    foreach ($taken_or_not as $key => $index) {
+
+                        if ($index != "") {
+                            $get_data_post = get_post($taken_or_not_info[$key]);
+                            $inner_days_info .= "<div>" . nlp_human_translator_blocks($key) . " </div>";
+                            //echo nlp_human_translator_blocks($key);
+                            $inner_days_info .= '<div class="hidden_info"><div class="hidden_title">' . $get_data_post->post_title . '</div><div class="hidden_description">' . $get_data_post->post_content . '</div></div>';
+                        }
+                    }
+                }
+
+
+                $inner_days_info .="</div>";
+
+                $return_days .= "<div  id='" . $i . "' class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_first_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_first_month, $date_current_year, $i) . "'> " . $i . "" . $inner_days_info . "</div>";
+            }
+        }
+        $return_days .="</div>";
+    }
+    $return_days .= "</div>";
+    hide_not_menu_for_not_admin_users();
+    echo $return_days;
+}
+
+add_shortcode('nlp_day_of_months_front_shortcode', 'nlp_day_of_months_front');
+
+/*
+
+ * 
+ * Ajax za kalendara ,nalojitelno zaradi razlichnite zali
+ *  */
+
+function nlp_calendar_view_for_difr_hals() {
+
+    if (isset($_POST['id_of_hall']) && !empty($_POST['id_of_hall'])) {
+
+        $hall_id = filter_input(INPUT_POST, 'id_of_hall', FILTER_SANITIZE_NUMBER_INT);
+        for ($k = 1; $k <= 12; $k++) {
+            $date_first_month = $k;
             $date_current_year = date('y');
             $days_in_month = cal_days_in_month(CAL_GREGORIAN, $date_first_month, $date_current_year);
+
             $return_days .= "<div class='nlp_months'>";
             for ($i = 1; $i <= $days_in_month; $i++) {
                 $day_name_class = nlp_return_day_name_english($date_first_month, $date_current_year, $i);
                 if ($i == 1) {
-                     $inner_days_info = "";
-                      $inner_days_info .= "<div>";
-                    foreach ($all_halls_id_names as $indexss => $valuess) {
-    
-                    $taken_or_not = nlp_check_if_time_is_taken(($date_current_year+2000 )."-".$date_first_month."-".$i,$valuess);
-                    
-                    
-                       
-                        if(!empty($taken_or_not)){
-                        foreach($taken_or_not as $key=>$index){
-                           
-                            if($index != ""){
-                                $inner_days_info .= "<div>".nlp_human_translator_blocks($key)." zaet $indexss</div>";
+                    $inner_days_info = "";
+                    $inner_days_info .= "<div>";
+                    $taken_or_not = nlp_check_if_time_is_taken(($date_current_year + 2000 ) . "-" . $date_first_month . "-" . $i, $hall_id);
+
+
+
+                    if (!empty($taken_or_not)) {
+                        foreach ($taken_or_not as $key => $index) {
+
+                            if ($index != "") {
+                                $inner_days_info .= "<div>" . nlp_human_translator_blocks($key) . " zaet </div>";
                             }
                         }
-                        }
-                            
                     }
-                        $inner_days_info .="</div>";
-                   
-                    $return_days .= nlp_calendar_view($day_name_class) . "<div class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_first_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_first_month, $date_current_year, $i) . "'> (" . $i . ")".$inner_days_info."</div>";
+
+                    $inner_days_info .="</div>";
+
+                    $return_days .= nlp_calendar_view($day_name_class) . "<div  id='" . $i . "' class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_first_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_first_month, $date_current_year, $i) . "'> " . $i . "" . $inner_days_info . "</div>";
                 } else {
                     $inner_days_info = "";
                     $inner_days_info .= "<div>";
-                      foreach ($all_halls_id_names as $indexs => $values) {
-    
-                    $taken_or_not = nlp_check_if_time_is_taken(($date_current_year+2000 )."-".$date_first_month."-".$i,$values);
-                   
-                 
-                      
-                        
-                          if(!empty($taken_or_not)){
-                        foreach($taken_or_not as $key=>$index){
-                           
-                            if($index != ""){
-                                $inner_days_info .= "<div>".nlp_human_translator_blocks($key)." zaet $indexs</div>";
+                    $taken_or_not = nlp_check_if_time_is_taken(($date_current_year + 2000 ) . "-" . $date_first_month . "-" . $i, $hall_id);
+                    $taken_or_not_info = nlp_check_if_time_is_taken_post(($date_current_year + 2000 ) . "-" . $date_first_month . "-" . $i, $all_halls_id_names[0]);
+
+
+                    if (!empty($taken_or_not)) {
+                        foreach ($taken_or_not as $key => $index) {
+
+                            if ($index != "") {
+                                $get_data_post = get_post($taken_or_not_info[$key]);
+                                $inner_days_info .= "<div>" . nlp_human_translator_blocks($key) . " </div>";
+                                $inner_days_info .= '<div class="hidden_info"><div class="hidden_title">' . $get_data_post->post_title . '</div><div class="hidden_description">' . $get_data_post->post_content . '</div></div>';
                             }
                         }
-                          }
-                           }
-                        $inner_days_info .="</div>";
-                     
-                    $return_days .= "<div class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_first_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_first_month, $date_current_year, $i) . "'> (" . $i . ")".$inner_days_info."</div>";
+                    }
+
+
+                    $inner_days_info .="</div>";
+
+
+                    $return_days .= "<div  id='" . $i . "' class='nlp_day_selected nlp_" . nlp_return_day_name_english($date_first_month, $date_current_year, $i) . "' value='" . $i . "' title='" . nlp_return_day_name($date_first_month, $date_current_year, $i) . "'> " . $i . "" . $inner_days_info . "</div>";
                 }
             }
             $return_days .="</div>";
         }
-        $return_days .= "</div>";
         echo $return_days;
-
+    }
 }
 
-add_shortcode('nlp_day_of_months_front_shortcode', 'nlp_day_of_months_front');
+add_action('wp_ajax_nlp_calendar_view_for_difr_hals', 'nlp_calendar_view_for_difr_hals');
+add_action('wp_ajax_nopriv_nlp_calendar_view_for_difr_hals', 'nlp_calendar_view_for_difr_hals');
+
+
+/*
+
+ * function to check if any hours are taken from another post and give info 
+ * 
+ *  */
+
+function nlp_check_if_time_is_taken_post($date_input, $hall_number) {
+
+    //this must be done before the acutal call of the function ,example code for $date value 
+    $post_date = $date_input;
+
+    $date = explode(" ", $post_date);
+
+    //end of $date ,value like this must be returned ( year /month/ day)
+    $date_exploded = explode("-", $date[0]);
+    $taken_hours = array();
+    //var_dump(get_categories());
+    //ne e s pravilnite categorii  ! ! ! da se opravi
+
+    $args = array(
+        'post_type' => 'post',
+        'category' => $hall_number,
+        'post_status' => 'any',
+        'date_query' => array(
+            array(
+                'year' => $date_exploded[0],
+                'month' => $date_exploded[1],
+                'day' => $date_exploded[2],
+            ),
+        ),
+    );
+
+    $query = get_posts($args);
+//    if(empty($query)){
+//        $the_array = "";
+//        return $the_array;
+//    }
+
+    $the_array = array(
+        0 => "",
+        1 => "",
+        2 => "",
+        3 => "",
+        4 => "",
+        5 => "",
+        6 => "",
+        7 => "",
+        8 => "",
+        9 => "",
+        10 => "",
+        11 => "",
+        12 => "",
+        13 => "",
+    );
+    $array_ids = array();
+    foreach ($query as $data) {
+        $post_id = 0;
+        foreach ($data as $key_data => $data_value) {
+
+            if ($key_data == 'ID') {
+
+                $post_id = $data_value;
+                $post_end_time = get_post_meta($data_value, 'nlp_html_for_meta_box_end_time', true);
+                $post_title = get_the_title($post_id);
+                $post_info = get_the_content($post_date);
+                if (is_array($post_end_time)) {
+                    foreach ($post_end_time as $key => $value) {
+
+                        if ($value != "") {
+
+                            $array_ids[$key] = $post_id;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return $array_ids;
+}
+
+add_action('admin_enqueue_scripts', 'queue_my_admin_scripts');
+
+function queue_my_admin_scripts() {
+    wp_enqueue_script('my-spiffy-miodal', // handle
+            'URL_TO_THE_JS_FILE', // source
+            array('jquery-ui-dialog')); // dependencies
+    // A style available in WP               
+    wp_enqueue_style('wp-jquery-ui-dialog');
+}

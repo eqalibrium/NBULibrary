@@ -595,3 +595,4 @@ function nlp_check_date_for_reservation(){
     
     
 }
+
